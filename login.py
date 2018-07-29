@@ -1,5 +1,5 @@
-from tkinter import *
-import tkinter.messagebox as tm
+from Tkinter import *
+import tkMessageBox as tm
 import file_browser
 import socket
 
@@ -8,7 +8,8 @@ password=None
 
 class LoginFrame(Frame):
     def __init__(self, master):
-        super().__init__(master)
+        #super().__init__(master)
+        Frame.__init__(self, master)
 
         self.label_username = Label(self, text="Username")
         self.label_password = Label(self, text="Password")
@@ -42,4 +43,4 @@ class LoginFrame(Frame):
 root = Tk()
 root.title("Login")
 lf = LoginFrame(root)
-root.mainloop()
+lf.mainloop()
