@@ -1,6 +1,7 @@
 from tkinter import *
 import tkinter.messagebox as tm
 import file_browser
+import socket
 
 username=None
 password=None
@@ -26,7 +27,9 @@ class LoginFrame(Frame):
         self.pack()
     
     def _login_btn_clicked(self):
-        # print("Clicked")
+        ###############################################
+        #ADD METHOD TO LOGIN to SERVER HERE
+        ###############################################
         username = self.entry_username.get()
         password = self.entry_password.get()
         
