@@ -17,7 +17,7 @@ def clientrun(name,sock):
             exists = True
     #if user doesn't exist then add user to list (newly registed user)
     if exists == False:
-        sock.send("NEW")    
+        sock.send("NEW")
         password = sock.recv(1024)
         users.append((username,password))
         logincheck = True
@@ -33,61 +33,69 @@ def clientrun(name,sock):
         sock.send("FAIL")
     elif logincheck == True:
         sock.send("PASS")
-        
-    #check what command client is requesting to perform
-    #IMPORTANT: right now the way its set up is to allow only one command, if want to continue to 
-    #carry out commands then we need a WHILE loop for all these if statements
-    print("Wait for command")
-    command = sock.recv(1024)
 
-    #if command is GET then get ready to send file to client.
-    #send file from Serverfiles to client's ClientFiles directory.
-    if command == "GET":
-        sock.send("GET")    #send this command back to client to verify action
-        filename = sock.recv(1024)
-        
-        #get the complete relative path to ServerFiles
-        completename = os.path.join(os.path.expanduser('~/Desktop/ServerFiles'),filename)
-        #check if file exists in ServerFiles directory
-        if os.path.isfile(completename):
-            sock.send("FOUND " + str(os.path.getsize(completename)))
-            response = sock.recv(1024)
-            if response[:6] == 'OKSEND': 
-                #open file and start sending bytes to client untill all is sent
-                with open(completename, 'rb') as f:
-                    sendbyte = f.read(1024)
-                    sock.send(sendbyte)
-                    while sendbyte != "":
+    #check what command client is requesting to perform
+    #IMPORTANT: right now the way its set up is to allow only one command, if want to continue to
+    #carry out commands then we need a WHILE loop for all these if statements
+    #*********************************************
+    #Caameron: Added in the while loop so that the server and client should keep asking for you if you
+    #want to do any addition commands. Will stop once you enter 'N'
+    while True:
+        print("Wait for command")
+        command = sock.recv(1024)
+
+        #if command is GET then get ready to send file to client.
+        #send file from Serverfiles to client's ClientFiles directory.
+        if command == "GET":
+            sock.send("GET")    #send this command back to client to verify action
+            filename = sock.recv(1024)
+
+            #get the complete relative path to ServerFiles
+            completename = os.path.join(os.path.expanduser('~/Desktop/ServerFiles'),filename)
+            #check if file exists in ServerFiles directory
+            if os.path.isfile(completename):
+                sock.send("FOUND " + str(os.path.getsize(completename)))
+                response = sock.recv(1024)
+                if response[:6] == 'OKSEND':
+                    #open file and start sending bytes to client untill all is sent
+                    with open(completename, 'rb') as f:
                         sendbyte = f.read(1024)
                         sock.send(sendbyte)
-        #This branch taken if file not found
-        else:
-            sock.send("NOFOUND")
+                        while sendbyte != "":
+                            sendbyte = f.read(1024)
+                            sock.send(sendbyte)
+            #This branch taken if file not found
+            else:
+                sock.send("NOFOUND")
 
-    #if command is PUT then get ready to recieve file from client.
-    #recieve file from Clientfiles to server's ServerFiles directory.
-    elif command == "PUT":
-        sock.send("PUT")    #send this command back to client to verify action
-        filename = sock.recv(1024)
-        #if filename is valid proceed
-        if filename != '!!!':
-            sock.send("OKSEND")
-            filesize = long(sock.recv(1024))
-            completename = os.path.join(os.path.expanduser('~/Desktop/ServerFiles'),filename)
-        ##    f = open(completename, 'wb')
-            content = sock.recv(1024)
-            if content != '!!!':
-                f = open(completename, 'wb')
-                currentrec = len(content)
-                f.write(content)
-                #continue to receive data from client untill current recieve 
-                #equals the filesize.
-                while currentrec < filesize:
-                    content = sock.recv(1024)
-                    currentrec = currentrec + len(content)
+        #if command is PUT then get ready to recieve file from client.
+        #recieve file from Clientfiles to server's ServerFiles directory.
+        elif command == "PUT":
+            sock.send("PUT")    #send this command back to client to verify action
+            filename = sock.recv(1024)
+            #if filename is valid proceed
+            if filename != '!!!':
+                sock.send("OKSEND")
+                filesize = long(sock.recv(1024))
+                completename = os.path.join(os.path.expanduser('~/Desktop/ServerFiles'),filename)
+            ##    f = open(completename, 'wb')
+                content = sock.recv(1024)
+                if content != '!!!':
+                    f = open(completename, 'wb')
+                    currentrec = len(content)
                     f.write(content)
+                    #continue to receive data from client untill current recieve
+                    #equals the filesize.
+                    while currentrec < filesize:
+                        content = sock.recv(1024)
+                        currentrec = currentrec + len(content)
+                        f.write(content)
 
-
+        #Wait for response if the user wants to complete another command.
+        #Loop breaks if client doesn't respond 'again'
+        continue_response = sock.recv(1024)
+        if continue_response != 'again':
+            break
 ##      other commands can go here in if statements like list directories, etc.
 ##      just be sure to also implement the complementary command for the client.
 ##      for example:
@@ -96,8 +104,8 @@ def clientrun(name,sock):
 ##        sock.send('LISTSERVER')
 ##              enter code here to list files and directories found in server (aka files found in ServerFiles)
 
-    
 
+    print("CLOSING")
     sock.close()
 
 def Main():
