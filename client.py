@@ -42,7 +42,7 @@ def Main(username,password):
     print("")
     #Caameron:Added in While loop to keep asking for commands
     while True:
-        action = raw_input("CHOOSE AN COMMAND (GET or PUT?): ")    ##<--can add other commands here when prompting....
+        action = raw_input("CHOOSE AN COMMAND (GET or PUT or MKDIR?): ")    ##<--can add other commands here when prompting....
 
         s.send(action)    #send the attempted command to server to get server ready to perform desired command
         command = s.recv(1024) #get verification from server that we will be performing command, get client ready.
@@ -133,6 +133,18 @@ def Main(username,password):
             else:
                 s.send("!!!")    #this will alert the server that we aren't proceeding with PUT
                 print("File not found in client")
+
+        #Caameron: if command is MKDIR then ask the user for the name of new directory and send it over to the
+        #server to be created. Print out if successfull or not
+        elif command == "MKDIR":
+            directory_name = raw_input("Enter name of director you want to create: ")
+            s.send(directory_name)
+            feedback = s.recv(1024)
+            if feedback == "DONE":
+                print("Directory Created")
+            else:
+                print("ERROR directory not created")
+
 
         #Ask if the user will want to order another command. Loop breaks if they answer no
         continue_action = raw_input("DO YOU WANT TO CHOOSE ANOTHER COMMAND? (Y/N)")

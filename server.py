@@ -91,6 +91,14 @@ def clientrun(name,sock):
                         currentrec = currentrec + len(content)
                         f.write(content)
 
+        #Caameron: if command is MKDIR then we will obtain the name of the directory from the client
+        #and create a new directory in ServerFiles with that name.
+        elif command == "MKDIR":
+            sock.send("MKDIR")
+            directory_name = sock.recv(1024)
+            os.mkdir(os.path.expanduser("~/Desktop/ServerFiles/" + directory_name))
+            sock.send("DONE")
+
         #Wait for response if the user wants to complete another command.
         #Loop breaks if client doesn't respond 'again'
         continue_response = sock.recv(1024)
