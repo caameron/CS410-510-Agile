@@ -1,6 +1,7 @@
 import socket
 import threading
 import os
+import pickle
 
 users = []    ##this is a list of tuples storing username and password like (username, password).
 
@@ -98,6 +99,22 @@ def clientrun(name,sock):
             directory_name = sock.recv(1024)
             os.mkdir(os.path.expanduser("~/Desktop/ServerFiles/" + directory_name))
             sock.send("DONE")
+
+        #Caameron: if command is LIST then ask the user if they want to display the local or server
+        #files and directories and print them out accordingly
+        elif command == "LIST":
+            sock.send("LIST")
+            choice = sock.recv(1024)
+            #Because this is a list and not a string we have to first pickle.dump the contents to be sent over
+            #to the client.
+            if choice == "SERVER":
+                files = os.listdir(os.path.expanduser('~/Desktop/ServerFiles'))
+                send_files = pickle.dumps(files)
+                sock.send(send_files)
+            elif choice == "LOCAL":
+                files = os.listdir(os.path.expanduser('~/Desktop/ClientFiles'))
+                send_files = pickle.dumps(files)
+                sock.send(send_files)
 
         #Wait for response if the user wants to complete another command.
         #Loop breaks if client doesn't respond 'again'

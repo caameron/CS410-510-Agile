@@ -2,6 +2,7 @@ import socket
 import os.path
 import sys
 import os
+import pickle
 
 def Main(username,password):
     host = '127.0.0.1'    #host ip
@@ -42,7 +43,7 @@ def Main(username,password):
     print("")
     #Caameron:Added in While loop to keep asking for commands
     while True:
-        action = raw_input("CHOOSE AN COMMAND (GET or PUT or MKDIR?): ")    ##<--can add other commands here when prompting....
+        action = raw_input("CHOOSE AN COMMAND (GET or PUT or MKDIR or LIST?): ")    ##<--can add other commands here when prompting....
 
         s.send(action)    #send the attempted command to server to get server ready to perform desired command
         command = s.recv(1024) #get verification from server that we will be performing command, get client ready.
@@ -145,6 +146,17 @@ def Main(username,password):
             else:
                 print("ERROR directory not created")
 
+        #Caameron: if command is LIST ask the user if they want to display the files and directories on the local
+        #or server and then print them out accordingly
+        elif command == "LIST":
+            choice = raw_input("List files/directories for server or local? (SERVER or LOCAL)")
+            s.send(choice)
+            #Because this is not a list, we need to receieve it and then use pickle to load the data sent over.
+            data = s.recv(1024)
+            files = pickle.loads(data)
+            print('Files with have an extensions. Directories will just be a name')
+            for file in files :
+                print('%s' % file)
 
         #Ask if the user will want to order another command. Loop breaks if they answer no
         continue_action = raw_input("DO YOU WANT TO CHOOSE ANOTHER COMMAND? (Y/N)")
