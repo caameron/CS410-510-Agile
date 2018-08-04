@@ -5,6 +5,7 @@ import os
 import pickle
 
 def Main(username,password):
+    global table
     host = '127.0.0.1'    #host ip
     port = 8888        #port number
 
@@ -43,19 +44,35 @@ def Main(username,password):
     print("")
     #Caameron:Added in While loop to keep asking for commands
     while True:
-        action = raw_input("CHOOSE AN COMMAND (GET or PUT or MKDIR or LIST?): ")    ##<--can add other commands here when prompting....
-
+        print "Enter \"HELP\" to show all supported commands and usage"
+        action = raw_input(">>> ")
+        #Namratha: Created a command line of sorts to input commands and parameters. Enter "HELP" to get the list of all commands
+        if action == "HELP":
+            from beautifultable import BeautifulTable
+            table = BeautifulTable()
+            table.column_headers = ["COMMAND","DESCRIPTION","SYNTAX"]
+            table.append_row(["GET","Download file from server","GET <filename>"])
+            table.append_row(["PUT","Upload file to server","PUT <filename>"])
+            table.append_row(["MKDIR","Create directory on server","MKDIR"])
+            table.append_row(["LIST","List files in local or server","LIST"])
+            table.append_row(["GETMULTIPLE","Download file from server","GETMULTIPLE <filename1> <filename2> ..."])
+            table.append_row(["PUTMULTIPLE","Upload file to server","PUTMULTIPLE <filename1> <filename2> ..."])
+            print(table)
+            continue
+        if action not in ["GET","PUT","MKDIR","LIST"]:
+            continue
+        
         s.send(action)    #send the attempted command to server to get server ready to perform desired command
         command = s.recv(1024) #get verification from server that we will be performing command, get client ready.
-
+        
         #IMPORTANT: right now the way its set up is to allow only one command before client is disconnected, if want to continue to
-            #carry out commands then we need a WHILE loop for all these if statements
+        #carry out commands then we need a WHILE loop for all these if statements
         #*********************************************
         #Caameron: Added in the while loop so that the server and client should keep asking for you if you
         #want to do any addition commands. Will stop once you enter 'N'.
         #The changes are made above after the print("CONTINUE") statement
-
-
+        
+        
         #if command is GET then we can use this to get a file from the server (get a file from server's Serverfiles directory)
         if command == 'GET':
             filename = raw_input("Enter filename you want to get from server: ")
@@ -157,13 +174,16 @@ def Main(username,password):
             print('Files with have an extensions. Directories will just be a name')
             for file in files :
                 print('%s' % file)
-
-        #Ask if the user will want to order another command. Loop breaks if they answer no
-        continue_action = raw_input("DO YOU WANT TO CHOOSE ANOTHER COMMAND? (Y/N)")
-        if continue_action == 'Y':
-            s.send("again")
+        
         else:
-            break
+                
+                
+        #Ask if the user will want to order another command. Loop breaks if they answer no
+        #continue_action = raw_input("DO YOU WANT TO CHOOSE ANOTHER COMMAND? (Y/N)")
+        #if continue_action == 'Y':
+        #    s.send("again")
+        #else:
+        #    break
 
 ##    other commands can go here in if statements like list directories, etc.
 ##    just be sure to also implement the complementary command for the server.
