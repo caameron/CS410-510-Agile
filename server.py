@@ -110,8 +110,18 @@ def clientrun(name,sock):
                 files = os.listdir(os.path.expanduser(r"C:\temp\clientlocation"))
                 send_files = pickle.dumps(files)
                 sock.send(send_files)
-
+        
+        elif command == "CD":
+            sock.send("CD")
+            
+        elif command == "DELETEFILE":
+            sock.send("DELETEFILE")
+        
+        elif command == "DELETEDIR":
+            sock.send("DELETEDIR")
+        
         elif command == "QUIT":
+            sock.send("QUIT")
             print("CLOSING")
             sock.close()
 

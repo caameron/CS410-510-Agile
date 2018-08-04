@@ -61,7 +61,7 @@ def Main(username,password):
             continue
             
         #Namratha: Check on client side to ensure only valid commands are sent to the server. Additional check is done on the server side for valid and supported commands
-        if action not in ["GET","PUT","MKDIR","LIST"]:
+        if action not in ["GET","PUT","MKDIR","LIST","CD","DELETEFILE","DELETEDIR"]:
             continue
         
         s.send(action)          #send the attempted command to server to get server ready to perform desired command
@@ -176,10 +176,24 @@ def Main(username,password):
             for file in files :
                 print('%s' % file)
         
+        #Namratha: need to add path variable to all command methods to be able to make this work in any directory of server
+        elif command == "CD":
+            dirname = raw_input("Enter directory name to CD into: ")
+            s.send(dirname)
+        
+        elif command == "DELETEFILE":
+            filename = raw_input("Enter filename to delete: ")
+        
+        elif command == "DELETEDIR":
+            dirname = raw_input("Enter directory name to delete: ")
+            
+        elif command == "QUIT":
+            break
+            
         elif command == "UNSUPPORTED":
             print "Server does not support commmand: ", commandline, ". Please check again!"
                 
-                
+        
         #Ask if the user will want to order another command. Loop breaks if they answer no
         #continue_action = raw_input("DO YOU WANT TO CHOOSE ANOTHER COMMAND? (Y/N)")
         #if continue_action == 'Y':
