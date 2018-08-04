@@ -4,8 +4,16 @@ import sys
 import os
 import pickle
 
+currentclientpath = None
+currentserverpath = None
+
 def Main(username,password):
     global table
+    global currentclientpath
+    global currentserverpath
+    
+    currentclientpath = r"C:\temp\clientlocation"
+    
     host = '127.0.0.1'    #host ip
     port = 8888        #port number
 
@@ -36,7 +44,7 @@ def Main(username,password):
     try:
         #this will make a folder in the client's desktop (using relative pathing) called ClientFiles. This folder will
         #act as the primary directory for the client where files will be sent to and from the folder for put/get.
-        os.mkdir(os.path.expanduser(r"C:\temp\clientlocation"))
+        os.mkdir(os.path.expanduser(currentclientpath))
     except:
         #if file already exists on desktop then just continue
         print("CONTINUE")
@@ -90,7 +98,7 @@ def Main(username,password):
                 response = raw_input("File to GET is " + str(filesize) + " Bytes, Proceed? (Y/N) ")
                 if response == 'Y':
                     s.send('OKSEND')    #tell server it can send the data now
-                    completename = os.path.join(os.path.expanduser(r"C:\temp\clientlocation"),filename) #this gets full path to ClientFiles
+                    completename = os.path.join(os.path.expanduser(currentclientpath),filename) #this gets full path to ClientFiles
                     #get ready to write the file to ClientFiles
                     f = open(completename, 'wb')
                     content = s.recv(1024) #initial receive of data from server
@@ -123,7 +131,7 @@ def Main(username,password):
         #uses similar logic as GET except almost reversed.
         elif command == 'PUT':
             filename = raw_input("Enter filename you want to put to server: ")
-            completename = os.path.join(os.path.expanduser(r"C:\temp\clientlocation"),filename)
+            completename = os.path.join(os.path.expanduser(currentclientpath),filename)
             #if the file exists in the Client's ClientFiles directory then continue
             if os.path.isfile(completename):
                 s.send(filename)
@@ -187,8 +195,23 @@ def Main(username,password):
         #Namratha: need to add path variable to all command methods to be able to make this work in any directory of server
         elif command == "CD":
             choice = raw_input("Change directory in server or local? (SERVER or LOCAL): ")
-            dirname = raw_input("Enter directory name to CD into: ")
-            s.send(dirname)
+            if choice in "LOCAL":
+                s.send(choice)
+                dirname = raw_input("Enter local directory name to CD into: ")
+                if os.path.exists(currentclientpath+"\\"+dirname):
+                    currentclientpath = currentclientpath+"\\"+dirname
+                    s.send(currentclientpath)
+                    print currentclientpath
+                else:
+                    print "Directory: %s does not exist. Please use LIST to see what directories exist in local!"%dirname
+                    
+            elif choice in "SERVER":
+                s.send(choice)
+                dirname = raw_input("Enter server directory name to CD into: ")
+                s.send(dirname)
+                direxists = s.recv(1024)
+                if direxists in "PASS":
+                    print "CD in server successful"
         
         elif command == "DELETEFILE":
             filename = raw_input("Enter filename to delete: ")
@@ -206,7 +229,7 @@ def Main(username,password):
             break
             
         elif command == "UNSUPPORTED":
-            print "Server does not support commmand: ", commandline, ". Please check again!"
+            print "Server does not support commmand: ", action, ". Please check again!"
                 
         
         #Ask if the user will want to order another command. Loop breaks if they answer no

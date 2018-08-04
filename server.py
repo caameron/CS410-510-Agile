@@ -3,10 +3,19 @@ import threading
 import os
 import pickle
 
+#Global variables
+currentserverpath = None
+currentclientpath = None
 users = []    ##this is a list of tuples storing username and password like (username, password).
 
 #function to be run by each socket thread
 def clientrun(name,sock):
+    global currentserverpath
+    global currentclientpath
+    
+    currentserverpath = r"C:\temp\serverlocation"
+    currentclientpath = r"C:\temp\clientlocation"
+    
     #Start by attempting to authenticate the client that is connecting to server
     username = sock.recv(1024)    #get username from client
     exists = False
@@ -49,7 +58,7 @@ def clientrun(name,sock):
             sock.send("GET")    #send this command back to client to verify action
             filename = sock.recv(1024)
             #get the complete relative path to ServerFiles
-            completename = os.path.join(os.path.expanduser(r"C:\temp\serverlocation"),filename)
+            completename = os.path.join(os.path.expanduser(currentserverpath),filename)
             #check if file exists in ServerFiles directory
             if os.path.isfile(completename):
                 sock.send("FOUND " + str(os.path.getsize(completename)))
@@ -73,7 +82,7 @@ def clientrun(name,sock):
             if filename != '!!!':
                 sock.send("OKSEND")
                 filesize = long(sock.recv(1024))
-                completename = os.path.join(os.path.expanduser(r"C:\temp\serverlocation"),filename)
+                completename = os.path.join(os.path.expanduser(currentserverpath),filename)
             ##    f = open(completename, 'wb')
                 content = sock.recv(1024)
                 if content != '!!!':
@@ -92,7 +101,7 @@ def clientrun(name,sock):
         elif command == "MKDIR":
             sock.send("MKDIR")
             directory_name = sock.recv(1024)
-            os.mkdir(os.path.expanduser(r"C:\temp\serverlocation" + directory_name))
+            os.mkdir(os.path.expanduser(currentserverpath + directory_name))
             sock.send("DONE")
 
         #Caameron: if command is LIST then ask the user if they want to display the local or server
@@ -103,16 +112,29 @@ def clientrun(name,sock):
             #Because this is a list and not a string we have to first pickle.dump the contents to be sent over
             #to the client.
             if choice == "SERVER":
-                files = os.listdir(os.path.expanduser(r"C:\temp\serverlocation"))
+                files = os.listdir(os.path.expanduser(currentserverpath))
                 send_files = pickle.dumps(files)
                 sock.send(send_files)
             elif choice == "LOCAL":
-                files = os.listdir(os.path.expanduser(r"C:\temp\clientlocation"))
+                files = os.listdir(os.path.expanduser(currentclientpath))
                 send_files = pickle.dumps(files)
                 sock.send(send_files)
         
         elif command == "CD":
             sock.send("CD")
+            choice=sock.recv(1024)
+            if choice in "LOCAL":
+                currentclientpath = sock.recv(1024)
+                print "Current client path: ",currentclientpath
+            elif choice in "SERVER":
+                dirname = sock.recv(1024)
+                if os.path.exists(currentserverpath+"\\"+dirname):
+                    currentserverpath = currentserverpath+"\\"+dirname
+                    print "Current server path: ", currentserverpath
+                    sock.send("PASS")
+                else:
+                    print "Path: ",currentserverpath+"\\"+dirname, " does not exist on server"
+                    sock.send("FAIL")
             
         elif command == "DELETEFILE":
             sock.send("DELETEFILE")
@@ -151,13 +173,16 @@ def clientrun(name,sock):
 
 
 def Main():
+    global currentclientpath
+    global currentserverpath
+    
     host = '127.0.0.1'    #host ip of server
     port = 8888    #port of server
 
     try:
         #make a folder/directory on the relative path to desktop of server called ServerFiles.
         #this folder will be the primary directory where files will be sent to and from.
-        os.mkdir(os.path.expanduser("~/Desktop/ServerFiles"))
+        os.mkdir(os.path.expanduser(currentserverpath))
     except:
         #continue if folder already exists in server's desktop.
         print("CONTINUE")
