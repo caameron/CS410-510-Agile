@@ -42,28 +42,30 @@ def Main(username,password):
         print("CONTINUE")
 
     print("")
-    #Caameron:Added in While loop to keep asking for commands
+    #Cameron:Added in While loop to keep asking for commands
     while True:
         print "Enter \"HELP\" to show all supported commands and usage"
         action = raw_input(">>> ")
         #Namratha: Created a command line of sorts to input commands and parameters. Enter "HELP" to get the list of all commands
         if action == "HELP":
-            from beautifultable import BeautifulTable
-            table = BeautifulTable()
-            table.column_headers = ["COMMAND","DESCRIPTION","SYNTAX"]
-            table.append_row(["GET","Download file from server","GET <filename>"])
-            table.append_row(["PUT","Upload file to server","PUT <filename>"])
-            table.append_row(["MKDIR","Create directory on server","MKDIR"])
-            table.append_row(["LIST","List files in local or server","LIST"])
-            table.append_row(["GETMULTIPLE","Download file from server","GETMULTIPLE <filename1> <filename2> ..."])
-            table.append_row(["PUTMULTIPLE","Upload file to server","PUTMULTIPLE <filename1> <filename2> ..."])
+            from prettytable import PrettyTable
+            table = PrettyTable()
+            table.field_names = ["COMMAND","DESCRIPTION","SYNTAX"]
+            table.add_row(["GET","Download file from server","GET <filename>"])
+            table.add_row(["PUT","Upload file to server","PUT <filename>"])
+            table.add_row(["MKDIR","Create directory on server","MKDIR"])
+            table.add_row(["LIST","List files in local or server","LIST"])
+            table.add_row(["GETMULTIPLE","Download file from server","GETMULTIPLE <filename1> <filename2> ..."])
+            table.add_row(["PUTMULTIPLE","Upload file to server","PUTMULTIPLE <filename1> <filename2> ..."])
             print(table)
             continue
+            
+        #Namratha: Check on client side to ensure only valid commands are sent to the server. Additional check is done on the server side for valid and supported commands
         if action not in ["GET","PUT","MKDIR","LIST"]:
             continue
         
-        s.send(action)    #send the attempted command to server to get server ready to perform desired command
-        command = s.recv(1024) #get verification from server that we will be performing command, get client ready.
+        s.send(action)          #send the attempted command to server to get server ready to perform desired command
+        command = s.recv(1024)  #get verification from server that we will be performing command, get client ready.
         
         #IMPORTANT: right now the way its set up is to allow only one command before client is disconnected, if want to continue to
         #carry out commands then we need a WHILE loop for all these if statements
@@ -71,7 +73,6 @@ def Main(username,password):
         #Caameron: Added in the while loop so that the server and client should keep asking for you if you
         #want to do any addition commands. Will stop once you enter 'N'.
         #The changes are made above after the print("CONTINUE") statement
-        
         
         #if command is GET then we can use this to get a file from the server (get a file from server's Serverfiles directory)
         if command == 'GET':
@@ -83,7 +84,7 @@ def Main(username,password):
                 response = raw_input("File to GET is " + str(filesize) + " Bytes, Proceed? (Y/N) ")
                 if response == 'Y':
                     s.send('OKSEND')    #tell server it can send the data now
-                    completename = os.path.join(os.path.expanduser('~/Desktop/ClientFiles'),filename) #this gets full path to ClientFiles
+                    completename = os.path.join(os.path.expanduser(r"C:\temp\clientlocation"),filename) #this gets full path to ClientFiles
                     #get ready to write the file to ClientFiles
                     f = open(completename, 'wb')
                     content = s.recv(1024) #initial receive of data from server
@@ -94,27 +95,27 @@ def Main(username,password):
                         content = s.recv(1024)
                         currentrec = currentrec + len(content)
                         f.write(content)
-
-                        os.system('clear')
-                        progress = '['
-                        #this will simulate a progress bar of how much of the process has completed.
-                        for x in range (0, int(currentrec/float(filesize) * 100)):
-                            progress += '#'
-                        #print current progress
-                        #print "{0:.2f}".format((currentrec/float(filesize))*100)+ "% " + progress + "]"
+                        
+                        #os.system('clear')
+                        #progress = '['
+                        ##this will simulate a progress bar of how much of the process has completed.
+                        #for x in range (0, int(currentrec/float(filesize) * 100)):
+                        #    progress += '#'
+                        ##print current progress
+                        ##print "{0:.2f}".format((currentrec/float(filesize))*100)+ "% " + progress + "]"
                     print("GET successful")
                 else:
                     print("Aborting GET")
-
+            
             #this else branch taken if file not found
             else:
                 print("File not found in server")
-
+        
         #if command is PUT then we can use this to put a file from client (ClientFiles) to server's ServerFiles directory
         #uses similar logic as GET except almost reversed.
         elif command == 'PUT':
             filename = raw_input("Enter filename you want to put to server: ")
-            completename = os.path.join(os.path.expanduser('~/Desktop/ClientFiles'),filename)
+            completename = os.path.join(os.path.expanduser(r"C:\temp\clientlocation"),filename)
             #if the file exists in the Client's ClientFiles directory then continue
             if os.path.isfile(completename):
                 s.send(filename)
@@ -175,7 +176,8 @@ def Main(username,password):
             for file in files :
                 print('%s' % file)
         
-        else:
+        elif command == "UNSUPPORTED":
+            print "Server does not support commmand: ", commandline, ". Please check again!"
                 
                 
         #Ask if the user will want to order another command. Loop breaks if they answer no

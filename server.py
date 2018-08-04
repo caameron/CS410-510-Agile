@@ -7,7 +7,6 @@ users = []    ##this is a list of tuples storing username and password like (use
 
 #function to be run by each socket thread
 def clientrun(name,sock):
-
     #Start by attempting to authenticate the client that is connecting to server
     username = sock.recv(1024)    #get username from client
     exists = False
@@ -42,17 +41,15 @@ def clientrun(name,sock):
     #Caameron: Added in the while loop so that the server and client should keep asking for you if you
     #want to do any addition commands. Will stop once you enter 'N'
     while True:
-        print("Wait for command")
+        #print("Wait for command")
         command = sock.recv(1024)
-
         #if command is GET then get ready to send file to client.
         #send file from Serverfiles to client's ClientFiles directory.
         if command == "GET":
             sock.send("GET")    #send this command back to client to verify action
             filename = sock.recv(1024)
-
             #get the complete relative path to ServerFiles
-            completename = os.path.join(os.path.expanduser('~/Desktop/ServerFiles'),filename)
+            completename = os.path.join(os.path.expanduser(r"C:\temp\serverlocation"),filename)
             #check if file exists in ServerFiles directory
             if os.path.isfile(completename):
                 sock.send("FOUND " + str(os.path.getsize(completename)))
@@ -61,11 +58,9 @@ def clientrun(name,sock):
                     #open file and start sending bytes to client untill all is sent
                     with open(completename, 'rb') as f:
                         sendbyte = f.read(1024)
-                        sock.send(sendbyte)
                         while sendbyte != "":
-                            sendbyte = f.read(1024)
                             sock.send(sendbyte)
-            #This branch taken if file not found
+                            sendbyte = f.read(1024)
             else:
                 sock.send("NOFOUND")
 
@@ -78,7 +73,7 @@ def clientrun(name,sock):
             if filename != '!!!':
                 sock.send("OKSEND")
                 filesize = long(sock.recv(1024))
-                completename = os.path.join(os.path.expanduser('~/Desktop/ServerFiles'),filename)
+                completename = os.path.join(os.path.expanduser(r"C:\temp\serverlocation"),filename)
             ##    f = open(completename, 'wb')
                 content = sock.recv(1024)
                 if content != '!!!':
@@ -97,7 +92,7 @@ def clientrun(name,sock):
         elif command == "MKDIR":
             sock.send("MKDIR")
             directory_name = sock.recv(1024)
-            os.mkdir(os.path.expanduser("~/Desktop/ServerFiles/" + directory_name))
+            os.mkdir(os.path.expanduser(r"C:\temp\serverlocation" + directory_name))
             sock.send("DONE")
 
         #Caameron: if command is LIST then ask the user if they want to display the local or server
@@ -108,19 +103,26 @@ def clientrun(name,sock):
             #Because this is a list and not a string we have to first pickle.dump the contents to be sent over
             #to the client.
             if choice == "SERVER":
-                files = os.listdir(os.path.expanduser('~/Desktop/ServerFiles'))
+                files = os.listdir(os.path.expanduser(r"C:\temp\serverlocation"))
                 send_files = pickle.dumps(files)
                 sock.send(send_files)
             elif choice == "LOCAL":
-                files = os.listdir(os.path.expanduser('~/Desktop/ClientFiles'))
+                files = os.listdir(os.path.expanduser(r"C:\temp\clientlocation"))
                 send_files = pickle.dumps(files)
                 sock.send(send_files)
 
+        elif command == "QUIT":
+            print("CLOSING")
+            sock.close()
+
+        else:
+            sock.send("UNSUPPORTED")
+
         #Wait for response if the user wants to complete another command.
         #Loop breaks if client doesn't respond 'again'
-        continue_response = sock.recv(1024)
-        if continue_response != 'again':
-            break
+        #continue_response = sock.recv(1024)
+        #if continue_response != 'again':
+        #    break
 ##      other commands can go here in if statements like list directories, etc.
 ##      just be sure to also implement the complementary command for the client.
 ##      for example:
@@ -130,8 +132,6 @@ def clientrun(name,sock):
 ##              enter code here to list files and directories found in server (aka files found in ServerFiles)
 
 
-    print("CLOSING")
-    sock.close()
 
 def Main():
     host = '127.0.0.1'    #host ip of server
