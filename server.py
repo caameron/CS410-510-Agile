@@ -120,11 +120,18 @@ def clientrun(name,sock):
         elif command == "DELETEDIR":
             sock.send("DELETEDIR")
         
+        elif command == "RENAME":
+            sock.send("RENAME")
+        
+        elif command == "SEARCH":
+            sock.send("SEARCH")
+        
         elif command == "QUIT":
             sock.send("QUIT")
             print("CLOSING")
             sock.close()
-
+            return
+        
         else:
             sock.send("UNSUPPORTED")
 

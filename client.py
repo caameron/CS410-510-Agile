@@ -32,11 +32,11 @@ def Main(username,password):
     #if login info is just PASS then new user is registered
     elif login == "PASS":
         print("Thanks for registering on the FTP client " + username)
-
+    
     try:
         #this will make a folder in the client's desktop (using relative pathing) called ClientFiles. This folder will
         #act as the primary directory for the client where files will be sent to and from the folder for put/get.
-        os.mkdir(os.path.expanduser("~/Desktop/ClientFiles"))
+        os.mkdir(os.path.expanduser(r"C:\temp\clientlocation"))
     except:
         #if file already exists on desktop then just continue
         print("CONTINUE")
@@ -60,12 +60,14 @@ def Main(username,password):
             table.add_row(["CD","Change directory"])
             table.add_row(["DELETEFILE","Delete directory"])
             table.add_row(["DELETEDIR","Delete filename"])
+            table.add_row(["RENAME","Rename file in local or server"])
+            table.add_row(["SEARCH","Search file in server"])
             table.add_row(["QUIT","Close socket connection"])
             print(table)
             continue
             
-        #Namratha: Check on client side to ensure only valid commands are sent to the server. Additional check is done on the server side for valid and supported commands
-        if action not in ["GET","PUT","MKDIR","LIST","CD","DELETEFILE","DELETEDIR"]:
+        #Namratha: Check on client side to ensure only valid commands are sent to the server. Additional check is done on the server side for supported commands
+        if action not in ["GET","PUT","MKDIR","LIST","CD","DELETEFILE","DELETEDIR","RENAME","SEARCH","QUIT"]:
             continue
         
         s.send(action)          #send the attempted command to server to get server ready to perform desired command
@@ -94,12 +96,14 @@ def Main(username,password):
                     content = s.recv(1024) #initial receive of data from server
                     currentrec = len(content)
                     f.write(content)
+                    
                     #while the currentrecieved data is less than the actual size of data keep recieving bytes
                     while currentrec < filesize:
                         content = s.recv(1024)
                         currentrec = currentrec + len(content)
                         f.write(content)
                         
+                        #Namratha: commented the following lines since the code did not work on a Windows machine
                         #os.system('clear')
                         #progress = '['
                         ##this will simulate a progress bar of how much of the process has completed.
@@ -160,7 +164,7 @@ def Main(username,password):
         #Caameron: if command is MKDIR then ask the user for the name of new directory and send it over to the
         #server to be created. Print out if successfull or not
         elif command == "MKDIR":
-            directory_name = raw_input("Enter name of director you want to create: ")
+            directory_name = raw_input("Enter name of directory you want to create: ")
             s.send(directory_name)
             feedback = s.recv(1024)
             if feedback == "DONE":
@@ -182,6 +186,7 @@ def Main(username,password):
         
         #Namratha: need to add path variable to all command methods to be able to make this work in any directory of server
         elif command == "CD":
+            choice = raw_input("Change directory in server or local? (SERVER or LOCAL): ")
             dirname = raw_input("Enter directory name to CD into: ")
             s.send(dirname)
         
@@ -190,6 +195,12 @@ def Main(username,password):
         
         elif command == "DELETEDIR":
             dirname = raw_input("Enter directory name to delete: ")
+            
+        elif command == "RENAME":
+            choice = raw_input("Rename file for server or local? (SERVER or LOCAL): ")
+            
+        elif command == "SEARCH":
+            filename = raw_input("Enter filename to search: ")
             
         elif command == "QUIT":
             break
