@@ -44,19 +44,23 @@ def Main(username,password):
     print("")
     #Cameron:Added in While loop to keep asking for commands
     while True:
-        print "Enter \"HELP\" to show all supported commands and usage"
+        print "Enter \"HELP\" to show all supported commands"
         action = raw_input(">>> ")
         #Namratha: Created a command line of sorts to input commands and parameters. Enter "HELP" to get the list of all commands
         if action == "HELP":
             from prettytable import PrettyTable
             table = PrettyTable()
-            table.field_names = ["COMMAND","DESCRIPTION","SYNTAX"]
-            table.add_row(["GET","Download file from server","GET <filename>"])
-            table.add_row(["PUT","Upload file to server","PUT <filename>"])
-            table.add_row(["MKDIR","Create directory on server","MKDIR"])
-            table.add_row(["LIST","List files in local or server","LIST"])
-            table.add_row(["GETMULTIPLE","Download file from server","GETMULTIPLE <filename1> <filename2> ..."])
-            table.add_row(["PUTMULTIPLE","Upload file to server","PUTMULTIPLE <filename1> <filename2> ..."])
+            table.field_names = ["COMMAND","DESCRIPTION"]
+            table.add_row(["GET","Download file from server"])
+            table.add_row(["PUT","Upload file to server"])
+            table.add_row(["MKDIR","Create directory on server"])
+            table.add_row(["LIST","List files in local or server"])
+            table.add_row(["GETMULTIPLE","Download file from server"])
+            table.add_row(["PUTMULTIPLE","Upload file to server"])
+            table.add_row(["CD","Change directory"])
+            table.add_row(["DELETEFILE","Delete directory"])
+            table.add_row(["DELETEDIR","Delete filename"])
+            table.add_row(["QUIT","Close socket connection"])
             print(table)
             continue
             
