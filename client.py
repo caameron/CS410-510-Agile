@@ -11,10 +11,9 @@ def Main(username,password):
     global table
     global currentclientpath
     global currentserverpath
-    
-    #currentclientpath = r"C:\temp\clientlocation"
+
     currentclientpath = os.path.realpath("ClientLocation")
-    
+
     host = '127.0.0.1'    #host ip
     port = 8888        #port number
 
@@ -41,7 +40,7 @@ def Main(username,password):
     #if login info is just PASS then new user is registered
     elif login == "PASS":
         print("Thanks for registering on the FTP client " + username)
-    
+
     try:
         #this will make a folder in the client's desktop (using relative pathing) called ClientFiles. This folder will
         #act as the primary directory for the client where files will be sent to and from the folder for put/get.
@@ -74,21 +73,21 @@ def Main(username,password):
             table.add_row(["QUIT","Log Off"])
             print(table)
             continue
-            
+
         #Namratha: Check on client side to ensure only valid commands are sent to the server. Additional check is done on the server side for supported commands
         if action not in ["GET","PUT","MKDIR","LIST","CD","DELETEFILE","DELETEDIR","RENAME","SEARCH","QUIT"]:
             continue
-        
+
         s.send(action)          #send the attempted command to server to get server ready to perform desired command
         command = s.recv(1024)  #get verification from server that we will be performing command, get client ready.
-        
+
         #IMPORTANT: right now the way its set up is to allow only one command before client is disconnected, if want to continue to
         #carry out commands then we need a WHILE loop for all these if statements
         #*********************************************
         #Caameron: Added in the while loop so that the server and client should keep asking for you if you
         #want to do any addition commands. Will stop once you enter 'N'.
         #The changes are made above after the print("CONTINUE") statement
-        
+
         #if command is GET then we can use this to get a file from the server (get a file from server's Serverfiles directory)
         if command == 'GET':
             filename = raw_input("Enter filename you want to get from server: ")
@@ -105,13 +104,13 @@ def Main(username,password):
                     content = s.recv(1024) #initial receive of data from server
                     currentrec = len(content)
                     f.write(content)
-                    
+
                     #while the currentrecieved data is less than the actual size of data keep recieving bytes
                     while currentrec < filesize:
                         content = s.recv(1024)
                         currentrec = currentrec + len(content)
                         f.write(content)
-                        
+
                         #Namratha: commented the following lines since the code did not work on a Windows machine
                         #os.system('clear')
                         #progress = '['
@@ -123,11 +122,11 @@ def Main(username,password):
                     print("GET successful")
                 else:
                     print("Aborting GET")
-            
+
             #this else branch taken if file not found
             else:
                 print("File not found in server")
-        
+
         #if command is PUT then we can use this to put a file from client (ClientFiles) to server's ServerFiles directory
         #uses similar logic as GET except almost reversed.
         elif command == 'PUT':
@@ -192,7 +191,7 @@ def Main(username,password):
             print('Files with have an extensions. Directories will just be a name')
             for file in files :
                 print('%s' % file)
-        
+
         #Namratha: need to add path variable to all command methods to be able to make this work in any directory of server
         elif command == "CD":
             choice = raw_input("Change directory in server or local? (SERVER or LOCAL): ")
@@ -205,7 +204,7 @@ def Main(username,password):
                     print currentclientpath
                 else:
                     print "Directory: %s does not exist. Please use LIST to see what directories exist in local!"%dirname
-                    
+
             elif choice in "SERVER":
                 s.send(choice)
                 dirname = raw_input("Enter server directory name to CD into: ")
@@ -213,7 +212,7 @@ def Main(username,password):
                 direxists = s.recv(1024)
                 if direxists in "PASS":
                     print "CD in server successful"
-        
+
         elif command == "DELETEFILE":
             choice = raw_input("Delete file in server or local? (SERVER or LOCAL): ")
             filename = raw_input("Enter filename(s) to delete (ex: file1.txt file2.txt file2.txt ...): ")
@@ -241,24 +240,24 @@ def Main(username,password):
             else:
                 s.send("UNKNOWN")
                 response = s.recv(1024)
-                
+
         elif command == "DELETEDIR":
             dirname = raw_input("Enter directory name to delete: ")
-            
+
         elif command == "RENAME":
             choice = raw_input("Rename file for server or local? (SERVER or LOCAL): ")
-            
+
         elif command == "SEARCH":
             filename = raw_input("Enter filename to search: ")
-            
+
         elif command == "QUIT":
             break
-            
+
         elif command == "UNSUPPORTED":
             print "Server does not support commmand: ", action, ". Please check again!"
-                
-        
-        
+
+
+
 ##    other commands can go here in if statements like list directories, etc.
 ##    just be sure to also implement the complementary command for the server.
 ##    for example:

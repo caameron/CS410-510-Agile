@@ -12,12 +12,10 @@ users = []    ##this is a list of tuples storing username and password like (use
 def clientrun(name,sock):
     global currentserverpath
     global currentclientpath
-    
-    #currentserverpath = r"C:\temp\serverlocation"
-    #currentclientpath = r"C:\temp\clientlocation"
+
     currentclientpath = os.path.realpath("ClientLocation")
     currentserverpath = os.path.realpath("ServerLocation")
-    
+
     #Start by attempting to authenticate the client that is connecting to server
     username = sock.recv(1024)    #get username from client
     exists = False
@@ -103,7 +101,8 @@ def clientrun(name,sock):
         elif command == "MKDIR":
             sock.send("MKDIR")
             directory_name = sock.recv(1024)
-            os.mkdir(os.path.expanduser(currentserverpath + directory_name))
+            dirpath = os.path.join(currentserverpath,directory_name)
+            os.mkdir(dirpath)
             sock.send("DONE")
 
         #Caameron: if command is LIST then ask the user if they want to display the local or server
@@ -121,7 +120,7 @@ def clientrun(name,sock):
                 files = os.listdir(os.path.expanduser(currentclientpath))
                 send_files = pickle.dumps(files)
                 sock.send(send_files)
-        
+
         elif command == "CD":
             sock.send("CD")
             choice=sock.recv(1024)
@@ -137,7 +136,7 @@ def clientrun(name,sock):
                 else:
                     print "Path: ",currentserverpath+"\\"+dirname, " does not exist on server"
                     sock.send("FAIL")
-            
+
         elif command == "DELETEFILE":
             sock.send("DELETEFILE")
             choice = sock.recv(1024)
@@ -161,22 +160,22 @@ def clientrun(name,sock):
                         print "File \"%s\" does not exist in directory \"%s\". Please use LIST to see files in server"%(filename,currentserverpath)
             else:
                 continue
-        
+
         elif command == "DELETEDIR":
             sock.send("DELETEDIR")
-        
+
         elif command == "RENAME":
             sock.send("RENAME")
-        
+
         elif command == "SEARCH":
             sock.send("SEARCH")
-        
+
         elif command == "QUIT":
             sock.send("QUIT")
             print("CLOSING")
             sock.close()
             return
-        
+
         else:
             sock.send("UNSUPPORTED")
 
@@ -198,7 +197,7 @@ def clientrun(name,sock):
 def Main():
     global currentclientpath
     global currentserverpath
-    
+
     host = '127.0.0.1'    #host ip of server
     port = 8888    #port of server
 
