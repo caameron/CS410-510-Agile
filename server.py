@@ -192,6 +192,11 @@ def clientrun(name,sock):
 
         elif command == "SEARCH":
             sock.send("SEARCH")
+            choice = sock.recv(1024)
+            if choice in "LOCAL":
+                continue
+            elif choice in "SERVER":
+                print "DO SEARCH HERE AND RETURN LIST OF FILES"
 
         elif command == "QUIT":
             sock.send("QUIT")

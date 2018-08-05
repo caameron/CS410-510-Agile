@@ -73,7 +73,7 @@ def Main(username,password):
             table.add_row(["RENAME","Rename file in local or server"])
             table.add_row(["SEARCH","Search file in local or server"])
             table.add_row(["COPY","Copy directories on server"])
-            table.add_row(["HISTORY","log history"])
+            table.add_row(["HISTORY","Display log history"])
             table.add_row(["QUIT","Log Off"])
             print(table)
             continue
@@ -279,8 +279,20 @@ def Main(username,password):
             choice = raw_input("Rename file for server or local? (SERVER or LOCAL): ")
 
         elif command == "SEARCH":
-            filename = raw_input("Enter filename to search: ")
-
+            choice = raw_input("Rename file for server or local? (SERVER or LOCAL): ")
+            fileregex = raw_input("Enter filename or extension to search: ")
+            if choice in "LOCAL":
+                s.send("LOCAL")
+                directory = currentclientpath
+                fileregex = fileregex.lower()
+                for dirpath, dirnames, files in os.walk(directory):
+                    for name in files:
+                        if fileregex.lower() in name.lower():
+                            print(os.path.join(dirpath, name))
+                        elif not fileregex:
+                            print(os.path.join(dirpath, name))
+            elif choice in "SERVER":
+                s.send("SERVER")
         elif command == "QUIT":
             break
 
