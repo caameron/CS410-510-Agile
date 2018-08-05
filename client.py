@@ -3,6 +3,7 @@ import os.path
 import sys
 import os
 import pickle
+import shutil
 
 currentclientpath = None
 currentserverpath = None
@@ -54,6 +55,7 @@ def Main(username,password):
     while True:
         print "Enter \"HELP\" to show all supported commands"
         action = raw_input(">>> ")
+        action = action.upper()
         #Namratha: Created a command line of sorts to input commands and parameters. Enter "HELP" to get the list of all commands
         if action == "HELP":
             from prettytable import PrettyTable
@@ -244,7 +246,34 @@ def Main(username,password):
                 response = s.recv(1024)
 
         elif command == "DELETEDIR":
+            choice = raw_input("Delete directory on server or local? (SERVER or LOCAL): ")
             dirname = raw_input("Enter directory name to delete: ")
+            if choice in "LOCAL":
+                s.send("LOCAL")
+                #dirpath = currentclientpath+"\\"+dirname
+                dirpath = os.path.join(currentclientpath,dirname)
+                print "dirpath \"%s\""%dirpath
+                if os.path.exists(dirpath):
+                    shutil.rmtree(dirpath)
+                    if not os.path.exists(dirpath):
+                        print "Directory \"%s\" deleted"%dirname
+                    else:
+                        print "Unable to delete \"%s\""%dirname
+                else:
+                    print "Directory \"%s\" does not exist ! \"%s\". Please use LIST to see files in local"%(dirname,currentclientpath)
+            elif choice in "SERVER":
+                s.send("SERVER")
+                s.send(dirname)
+                dirlist = dirname.split(" ")
+                for dirname in dirlist:
+                    deletestatus = s.recv(1024)
+                    if deletestatus in "PASS":
+                        print "Directory \"%s\" deleted"%dirname
+                    else:
+                        print "Unable to delete %s"%dirname
+            else:
+                s.send("UNKNOWN")
+                response = s.recv(1024)
 
         elif command == "RENAME":
             choice = raw_input("Rename file for server or local? (SERVER or LOCAL): ")
