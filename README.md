@@ -3,11 +3,11 @@
 Pre-Requisites
 1.  Python2.7 (Not Python3)
 2.  prettytable
-pip install prettytable
-or
-pip install https://pypi.python.org/packages/source/P/PrettyTable/prettytable-0.7.2.tar.bz2
-You may want to sudo while installing this package since it gave a a lot of pain with permissions during installion
-        
+- pip install prettytable
+- or
+- pip install https://pypi.python.org/packages/source/P/PrettyTable/prettytable-0.7.2.tar.bz2
+- You may want to sudo while installing this package since it gave a a lot of pain with permissions during installion
+
 Run server in command line: python server.py
 Run client in command line: python client.py username password
 
