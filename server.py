@@ -2,7 +2,7 @@ import socket
 import threading
 import os
 import pickle
-
+import shutil
 #Global variables
 currentserverpath = None
 currentclientpath = None
@@ -163,6 +163,29 @@ def clientrun(name,sock):
 
         elif command == "DELETEDIR":
             sock.send("DELETEDIR")
+            choice = sock.recv(1024)
+            if choice in "LOCAL":
+                continue
+            elif choice in "SERVER":
+                dirnames = sock.recv(1024)
+                dirlist = dirnames.split(" ")
+                for dirname in dirlist:
+                    #dirpath = currentserverpath+"\\"+dirname
+                    dirpath = os.path.join(currentserverpath,dirname)
+                    print "dirpath \"%s\""%dirpath
+                    if os.path.exists(dirpath):
+                        shutil.rmtree(dirpath)
+                        if not os.path.exists(dirpath):
+                            print "Directory \"%s\" deleted"%dirname
+                            sock.send("PASS")
+                        else:
+                            print "Unable to delete \"%s\""%dirname
+                            sock.send("FAIL")
+                    else:
+                        sock.send("FAIL")
+                        print "Directory \"%s\" does not exist! \"%s\". Please use LIST to see files in server"%(dirname,currentserverpath)
+            else:
+                continue
 
         elif command == "RENAME":
             sock.send("RENAME")
