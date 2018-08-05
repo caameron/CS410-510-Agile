@@ -142,19 +142,23 @@ def clientrun(name,sock):
             if choice in "LOCAL":
                 continue
             elif choice in "SERVER":
-                filename = sock.recv(1024)
-                filepath = currentserverpath+"\\"+filename
-                if os.path.exists(filepath):
-                    os.remove(filepath)
-                    if not os.path.exists(filepath):
-                        print "File \"%s\" deleted"%filename
-                        sock.send("PASS")
+                filenames = sock.recv(1024)
+                filelist = filenames.split(" ")
+                for filename in filelist:
+                    filepath = currentserverpath+"\\"+filename
+                    if os.path.exists(filepath):
+                        os.remove(filepath)
+                        if not os.path.exists(filepath):
+                            print "File \"%s\" deleted"%filename
+                            sock.send("PASS")
+                        else:
+                            print "Unable to delete \"%s\""%filename
+                            sock.send("FAIL")
                     else:
-                        print "Unable to delete \"%s\""%filename
                         sock.send("FAIL")
-                else:
-                    sock.send("FAIL")
-                    print "File \"%s\" does not exist in directory \"%s\". Please use LIST to see files in server"%(filename,currentserverpath)
+                        print "File \"%s\" does not exist in directory \"%s\". Please use LIST to see files in server"%(filename,currentserverpath)
+            else:
+                continue
         
         elif command == "DELETEDIR":
             sock.send("DELETEDIR")

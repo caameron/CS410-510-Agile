@@ -215,14 +215,14 @@ def Main(username,password):
         
         elif command == "DELETEFILE":
             choice = raw_input("Delete file in server or local? (SERVER or LOCAL): ")
-            filename = raw_input("Enter filename to delete: ")
+            filename = raw_input("Enter filename(s) to delete (ex: file1.txt file2.txt file2.txt ...): ")
             if choice in "LOCAL":
                 s.send("LOCAL")
                 filepath = currentclientpath+"\\"+filename
                 if os.path.exists(filepath):
                     os.remove(filepath)
                     if not os.path.exists(filepath):
-                        print "File %s deleted"%filename
+                        print "File \"%s\" deleted"%filename
                     else:
                         print "Unable to delete \"%s\""%filename
                 else:
@@ -230,11 +230,13 @@ def Main(username,password):
             elif choice in "SERVER":
                 s.send("SERVER")
                 s.send(filename)
-                deletestatus = s.recv(1024)
-                if deletestatus in "PASS":
-                    print "File \"%s\" deleted"%filename
-                else:
-                    print "Unable to delete %s"%filename
+                filelist = filename.split(" ")
+                for filename in filelist:
+                    deletestatus = s.recv(1024)
+                    if deletestatus in "PASS":
+                        print "File \"%s\" deleted"%filename
+                    else:
+                        print "Unable to delete %s"%filename
             else:
                 s.send("UNKNOWN")
                 response = s.recv(1024)
