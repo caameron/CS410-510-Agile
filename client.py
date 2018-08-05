@@ -66,11 +66,11 @@ def Main(username,password):
             table.add_row(["GETMULTIPLE","Download file from server"])
             table.add_row(["PUTMULTIPLE","Upload file to server"])
             table.add_row(["CD","Change directory"])
-            table.add_row(["DELETEFILE","Delete directory"])
-            table.add_row(["DELETEDIR","Delete filename"])
+            table.add_row(["DELETEFILE","Delete file"])
+            table.add_row(["DELETEDIR","Delete directory"])
             table.add_row(["RENAME","Rename file in local or server"])
             table.add_row(["SEARCH","Search file in server"])
-            table.add_row(["QUIT","Close socket connection"])
+            table.add_row(["QUIT","Log Off"])
             print(table)
             continue
             
