@@ -214,8 +214,31 @@ def Main(username,password):
                     print "CD in server successful"
         
         elif command == "DELETEFILE":
+            choice = raw_input("Delete file in server or local? (SERVER or LOCAL): ")
             filename = raw_input("Enter filename to delete: ")
-        
+            if choice in "LOCAL":
+                s.send("LOCAL")
+                filepath = currentclientpath+"\\"+filename
+                if os.path.exists(filepath):
+                    os.remove(filepath)
+                    if not os.path.exists(filepath):
+                        print "File %s deleted"%filename
+                    else:
+                        print "Unable to delete \"%s\""%filename
+                else:
+                    print "File \"%s\" does not exist in directory \"%s\". Please use LIST to see files in local"%(filename,currentclientpath)
+            elif choice in "SERVER":
+                s.send("SERVER")
+                s.send(filename)
+                deletestatus = s.recv(1024)
+                if deletestatus in "PASS":
+                    print "File \"%s\" deleted"%filename
+                else:
+                    print "Unable to delete %s"%filename
+            else:
+                s.send("UNKNOWN")
+                response = s.recv(1024)
+                
         elif command == "DELETEDIR":
             dirname = raw_input("Enter directory name to delete: ")
             
@@ -232,13 +255,7 @@ def Main(username,password):
             print "Server does not support commmand: ", action, ". Please check again!"
                 
         
-        #Ask if the user will want to order another command. Loop breaks if they answer no
-        #continue_action = raw_input("DO YOU WANT TO CHOOSE ANOTHER COMMAND? (Y/N)")
-        #if continue_action == 'Y':
-        #    s.send("again")
-        #else:
-        #    break
-
+        
 ##    other commands can go here in if statements like list directories, etc.
 ##    just be sure to also implement the complementary command for the server.
 ##    for example:
