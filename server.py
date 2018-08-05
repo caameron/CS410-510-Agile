@@ -13,8 +13,10 @@ def clientrun(name,sock):
     global currentserverpath
     global currentclientpath
     
-    currentserverpath = r"C:\temp\serverlocation"
-    currentclientpath = r"C:\temp\clientlocation"
+    #currentserverpath = r"C:\temp\serverlocation"
+    #currentclientpath = r"C:\temp\clientlocation"
+    currentclientpath = os.path.realpath("ClientLocation")
+    currentserverpath = os.path.realpath("ServerLocation")
     
     #Start by attempting to authenticate the client that is connecting to server
     username = sock.recv(1024)    #get username from client

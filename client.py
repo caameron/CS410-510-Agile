@@ -12,7 +12,8 @@ def Main(username,password):
     global currentclientpath
     global currentserverpath
     
-    currentclientpath = r"C:\temp\clientlocation"
+    #currentclientpath = r"C:\temp\clientlocation"
+    currentclientpath = os.path.realpath("ClientLocation")
     
     host = '127.0.0.1'    #host ip
     port = 8888        #port number
