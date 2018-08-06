@@ -15,6 +15,7 @@ fObj.write("\n******************************************************************
 fObj.write("\nCurrent Session Date and Time:"+time.strftime("%c"))
 fObj.write("\n******************************************************************************")
 
+#method to print to display and logging
 def printandlog(text):
     global fObj
     try:
@@ -22,35 +23,40 @@ def printandlog(text):
     except:
         fObj.write("\n"+text.get_string())
     print text
-    
+
+#method to consume raw input and logging
 def rawinputandlog(text):
     userin = raw_input(text)
     fObj.write("\n"+text+userin)
-    return userin
-    
+    return userin.upper()
+
 def Main(username,password):
     global table
     global currentclientpath
     global currentserverpath
     global fObj
-    
+
     currentclientpath = os.path.realpath("ClientLocation")
-    
+
     host = '127.0.0.1'  #host ip
     port = 8888         #port number
-    
-    s = socket.socket()         #get client socket s
-    s.connect((host,port))      #attempt to connect to server using host and port.
-    
-    s.send(username)    #send username that was received from command line to server to check if username exists
+
+    s = socket.socket()             #get client socket s
+    try:
+        s.connect((host,port))      #attempt to connect to server using host and port.
+    except:
+        printandlog("Connection refused! Please ensure Server is up and running!!")
+        return
+
+    s.send(username)                #send username that was received from command line to server to check if username exists
     member = s.recv(1024)
-    
+
     #send password next to server to validate.
     if member == 'NEW':
         s.send(password)
     if member == 'EXIST':
         s.send(password)
-    
+
     login = s.recv(1024)
     #if received login info from server is FAIL then alert that its incorrect user/pass combo and disconnect client.
     if login == "FAIL":
@@ -71,7 +77,7 @@ def Main(username,password):
     except:
         #if file already exists on desktop then just continue
         printandlog("CONTINUE")
-    
+
     printandlog("")
     #Cameron:Added in While loop to keep asking for commands
     while True:
@@ -79,7 +85,7 @@ def Main(username,password):
         printandlog("Enter \"HELP\" to show all supported commands")
         action = rawinputandlog(">>> ")
         action = action.upper()
-        #fObj.write("\n >>> "+action)
+
         #Namratha: Created a command line of sorts to input commands and parameters. Enter "HELP" to get the list of all commands
         if action == "HELP":
             from prettytable import PrettyTable
@@ -97,13 +103,13 @@ def Main(username,password):
             table.add_row(["RENAME","Rename file in local or server"])
             table.add_row(["SEARCH","Search file in local or server"])
             table.add_row(["COPY","Copy directories on server"])
-            table.add_row(["HISTORY","Display log history"])
             table.add_row(["QUIT","Log Off"])
             printandlog(table)
             continue
 
         #Namratha: Check on client side to ensure only valid commands are sent to the server. Additional check is done on the server side for supported commands
-        if action not in ["GET","PUT","MKDIR","LIST","CD","DELETEFILE","DELETEDIR","RENAME","SEARCH","QUIT","GETMULTIPLE","PUTMULTIPLE","COPY","HISTORY"]:
+        if action not in ["GET","PUT","MKDIR","LIST","CD","DELETEFILE","DELETEDIR","RENAME","SEARCH","QUIT","GETMULTIPLE","PUTMULTIPLE","COPY"]:
+            printandlog("Unsupported command!!")
             continue
 
         s.send(action)          #send the attempted command to server to get server ready to perform desired command
@@ -138,7 +144,7 @@ def Main(username,password):
                         content = s.recv(1024)
                         currentrec = currentrec + len(content)
                         f.write(content)
-                
+
                     printandlog("GET successful")
                 else:
                     printandlog("Aborting GET")
@@ -220,7 +226,7 @@ def Main(username,password):
                     printandlog(currentclientpath)
                 else:
                     printandlog("Directory: %s does not exist. Please use LIST to see what directories exist in local!"%dirname)
-            
+
             elif choice in "SERVER":
                 s.send(choice)
                 dirname = rawinputandlog("Enter server directory name to CD into: ")
@@ -302,7 +308,7 @@ def Main(username,password):
                             printandlog(os.path.join(dirpath, name))
                         elif not fileregex:
                             continue
-                            
+
             elif choice in "SERVER":
                 s.send("SERVER")
                 s.recv(1024)
@@ -314,7 +320,7 @@ def Main(username,password):
                         printandlog(file)
                 else:
                     printandlog("File not found!")
-                
+
         elif command == "QUIT":
             fObj.close()
             break
