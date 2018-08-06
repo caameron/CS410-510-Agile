@@ -212,7 +212,7 @@ def clientrun(name,sock):
                 else:
                     sock.send("PASS")
                     sock.send(str(foundList))
-        
+
         elif command == "QUIT":
             sock.send("QUIT")
             print("CLOSING")
