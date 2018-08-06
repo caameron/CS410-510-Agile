@@ -290,9 +290,20 @@ def Main(username,password):
                         if fileregex.lower() in name.lower():
                             print(os.path.join(dirpath, name))
                         elif not fileregex:
-                            print(os.path.join(dirpath, name))
+                            continue
+                            #print(os.path.join(dirpath, name))
             elif choice in "SERVER":
                 s.send("SERVER")
+                s.recv(1024)
+                s.send(fileregex)
+                searchstatus = s.recv(1024)
+                if searchstatus in "PASS":
+                    foundList = s.recv(1024)
+                    for file in foundList.lstrip("[").rstrip("]").split(","):
+                        print file
+                else:
+                    print "File not found!"
+                
         elif command == "QUIT":
             break
 
