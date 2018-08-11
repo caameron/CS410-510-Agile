@@ -5,6 +5,7 @@ import os
 import pickle
 import shutil
 import time
+from select import select
 
 currentclientpath = None
 currentserverpath = None
@@ -83,7 +84,19 @@ def Main(username,password):
     while True:
         fObj.write("\n******************************************************************************")
         printandlog("Enter \"HELP\" to show all supported commands")
-        action = rawinputandlog(">>> ")
+        sys.stdout.write("\n>>> ")
+        sys.stdout.flush()
+
+        #Dhwanil: created a timeout mechanism where client disconnects from server if idle for a minute
+        timeout = 60
+        rlist, _, _ = select([sys.stdin], [], [], timeout)
+        if rlist:
+            action = sys.stdin.readline().strip()
+         
+        else:
+            print("\n\n\nIdle for too long. Disconnecting...")
+            action = "QUIT"
+        
         action = action.upper()
 
         #Namratha: Created a command line of sorts to input commands and parameters. Enter "HELP" to get the list of all commands
