@@ -170,7 +170,6 @@ def clientrun(name,sock):
                 dirnames = sock.recv(1024)
                 dirlist = dirnames.split(" ")
                 for dirname in dirlist:
-                    #dirpath = currentserverpath+"\\"+dirname
                     dirpath = os.path.join(currentserverpath,dirname)
                     print "dirpath \"%s\""%dirpath
                     if os.path.exists(dirpath):
@@ -196,7 +195,23 @@ def clientrun(name,sock):
             if choice in "LOCAL":
                 continue
             elif choice in "SERVER":
-                print "DO SEARCH HERE AND RETURN LIST OF FILES"
+                sock.send("OKSENDFILE")
+                fileregex = sock.recv(1024)
+                directory = currentserverpath
+                fileregex = fileregex.lower()
+                foundList = []
+                for dirpath, dirnames, files in os.walk(directory):
+                    for name in files:
+                        if fileregex.lower() in name.lower():
+                            print(os.path.join(dirpath, name))
+                            foundList.append(os.path.join(dirpath, name))
+                        elif not fileregex:
+                            print(os.path.join(dirpath, name))
+                if len(foundList) < 1:
+                    sock.send("FAIL")
+                else:
+                    sock.send("PASS")
+                    sock.send(str(foundList))
 
         elif command == "QUIT":
             sock.send("QUIT")

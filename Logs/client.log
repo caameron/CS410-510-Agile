@@ -1,0 +1,253 @@
+
+******************************************************************************
+Current Session Date and Time:08/05/18 19:06:43
+******************************************************************************
+Welcome back test
+CONTINUE
+
+******************************************************************************
+Enter "HELP" to show all supported commands
+>>> HELP
++-------------+--------------------------------+
+|   COMMAND   |          DESCRIPTION           |
++-------------+--------------------------------+
+|     GET     |   Download file from server    |
+|     PUT     |     Upload file to server      |
+|    MKDIR    |   Create directory on server   |
+|     LIST    | List files in local or server  |
+| GETMULTIPLE |   Download file from server    |
+| PUTMULTIPLE |     Upload file to server      |
+|      CD     |        Change directory        |
+|  DELETEFILE |          Delete file           |
+|  DELETEDIR  |        Delete directory        |
+|    RENAME   | Rename file in local or server |
+|    SEARCH   | Search file in local or server |
+|     COPY    |   Copy directories on server   |
+|   HISTORY   |      Display log history       |
+|     QUIT    |            Log Off             |
++-------------+--------------------------------+
+******************************************************************************
+Enter "HELP" to show all supported commands
+>>> HELP
++-------------+--------------------------------+
+|   COMMAND   |          DESCRIPTION           |
++-------------+--------------------------------+
+|     GET     |   Download file from server    |
+|     PUT     |     Upload file to server      |
+|    MKDIR    |   Create directory on server   |
+|     LIST    | List files in local or server  |
+| GETMULTIPLE |   Download file from server    |
+| PUTMULTIPLE |     Upload file to server      |
+|      CD     |        Change directory        |
+|  DELETEFILE |          Delete file           |
+|  DELETEDIR  |        Delete directory        |
+|    RENAME   | Rename file in local or server |
+|    SEARCH   | Search file in local or server |
+|     COPY    |   Copy directories on server   |
+|   HISTORY   |      Display log history       |
+|     QUIT    |            Log Off             |
++-------------+--------------------------------+
+******************************************************************************
+Enter "HELP" to show all supported commands
+>>> LIST
+List files/directories for server or local? (SERVER or LOCAL)SERVER
+Files with have an extensions. Directories will just be a name
+dir1
+dir1file.txt
+dir2
+qslot_cheatsheet.txt
+******************************************************************************
+Enter "HELP" to show all supported commands
+>>> LIST
+List files/directories for server or local? (SERVER or LOCAL)LOCAL
+Files with have an extensions. Directories will just be a name
+dir1client
+qslot_cheatsheet.txt
+******************************************************************************
+Enter "HELP" to show all supported commands
+>>> SEARCH
+Rename file for server or local? (SERVER or LOCAL): LOCAL
+Enter filename or extension to search: dir
+C:\Users\manaskan\Desktop\Backup\CS410-510-Agile\ClientLocation\dir1client\dir1file.txt
+******************************************************************************
+Enter "HELP" to show all supported commands
+>>> QUIT
+******************************************************************************
+Current Session Date and Time:Fri Aug 10 22:59:04 2018
+******************************************************************************
+Thanks for registering on the FTP client dc
+CONTINUE
+
+******************************************************************************
+Enter "HELP" to show all supported commands
+Unsupported command!!
+******************************************************************************
+Enter "HELP" to show all supported commands
+Unsupported command!!
+******************************************************************************
+Enter "HELP" to show all supported commands
+******************************************************************************
+Current Session Date and Time:Fri Aug 10 22:59:40 2018
+******************************************************************************
+Welcome back dc
+CONTINUE
+
+******************************************************************************
+Enter "HELP" to show all supported commands
++-------------+--------------------------------+
+|   COMMAND   |          DESCRIPTION           |
++-------------+--------------------------------+
+|     GET     |   Download file from server    |
+|     PUT     |     Upload file to server      |
+|    MKDIR    |   Create directory on server   |
+|     LIST    | List files in local or server  |
+| GETMULTIPLE |   Download file from server    |
+| PUTMULTIPLE |     Upload file to server      |
+|      CD     |        Change directory        |
+|  DELETEFILE |          Delete file           |
+|  DELETEDIR  |        Delete directory        |
+|    RENAME   | Rename file in local or server |
+|    SEARCH   | Search file in local or server |
+|     COPY    |   Copy directories on server   |
+|     QUIT    |            Log Off             |
++-------------+--------------------------------+
+******************************************************************************
+Enter "HELP" to show all supported commands
+******************************************************************************
+Current Session Date and Time:Fri Aug 10 22:59:46 2018
+******************************************************************************
+Welcome back dc
+CONTINUE
+
+******************************************************************************
+Enter "HELP" to show all supported commands
++-------------+--------------------------------+
+|   COMMAND   |          DESCRIPTION           |
++-------------+--------------------------------+
+|     GET     |   Download file from server    |
+|     PUT     |     Upload file to server      |
+|    MKDIR    |   Create directory on server   |
+|     LIST    | List files in local or server  |
+| GETMULTIPLE |   Download file from server    |
+| PUTMULTIPLE |     Upload file to server      |
+|      CD     |        Change directory        |
+|  DELETEFILE |          Delete file           |
+|  DELETEDIR  |        Delete directory        |
+|    RENAME   | Rename file in local or server |
+|    SEARCH   | Search file in local or server |
+|     COPY    |   Copy directories on server   |
+|     QUIT    |            Log Off             |
++-------------+--------------------------------+
+******************************************************************************
+Enter "HELP" to show all supported commands
+******************************************************************************
+Current Session Date and Time:Fri Aug 10 22:59:52 2018
+******************************************************************************
+Welcome back dc
+CONTINUE
+
+******************************************************************************
+Enter "HELP" to show all supported commands
+******************************************************************************
+Current Session Date and Time:Fri Aug 10 23:00:00 2018
+******************************************************************************
+Welcome back dc
+CONTINUE
+
+******************************************************************************
+Enter "HELP" to show all supported commands
+******************************************************************************
+Current Session Date and Time:Fri Aug 10 23:00:22 2018
+******************************************************************************
+Welcome back dc
+CONTINUE
+
+******************************************************************************
+Enter "HELP" to show all supported commands
+******************************************************************************
+Current Session Date and Time:Fri Aug 10 23:00:37 2018
+******************************************************************************
+Welcome back dc
+CONTINUE
+
+******************************************************************************
+Enter "HELP" to show all supported commands
+******************************************************************************
+Current Session Date and Time:Fri Aug 10 23:01:00 2018
+******************************************************************************
+Welcome back dc
+CONTINUE
+
+******************************************************************************
+Enter "HELP" to show all supported commands
+******************************************************************************
+Current Session Date and Time:Fri Aug 10 23:02:23 2018
+******************************************************************************
+Welcome back dc
+CONTINUE
+
+******************************************************************************
+Enter "HELP" to show all supported commands
+Unsupported command!!
+******************************************************************************
+Enter "HELP" to show all supported commands
+Unsupported command!!
+******************************************************************************
+Enter "HELP" to show all supported commands
+******************************************************************************
+Current Session Date and Time:Fri Aug 10 23:02:31 2018
+******************************************************************************
+Welcome back dc
+CONTINUE
+
+******************************************************************************
+Enter "HELP" to show all supported commands
+******************************************************************************
+Current Session Date and Time:Fri Aug 10 23:02:49 2018
+******************************************************************************
+Welcome back dc
+CONTINUE
+
+******************************************************************************
+Enter "HELP" to show all supported commands
+******************************************************************************
+Current Session Date and Time:Sat Aug 11 17:48:32 2018
+******************************************************************************
+Welcome back rr
+CONTINUE
+
+******************************************************************************
+Enter "HELP" to show all supported commands
++-------------+--------------------------------+
+|   COMMAND   |          DESCRIPTION           |
++-------------+--------------------------------+
+|     GET     |   Download file from server    |
+|     PUT     |     Upload file to server      |
+|    MKDIR    |   Create directory on server   |
+|     LIST    | List files in local or server  |
+| GETMULTIPLE |   Download file from server    |
+| PUTMULTIPLE |     Upload file to server      |
+|      CD     |        Change directory        |
+|  DELETEFILE |          Delete file           |
+|  DELETEDIR  |        Delete directory        |
+|    RENAME   | Rename file in local or server |
+|    SEARCH   | Search file in local or server |
+|     COPY    |   Copy directories on server   |
+|     QUIT    |            Log Off             |
++-------------+--------------------------------+
+******************************************************************************
+Enter "HELP" to show all supported commands
+******************************************************************************
+Enter "HELP" to show all supported commands
+Rename file for server or local? (SERVER or LOCAL): LOCAL
+Enter filename or extension to search: newfile.txt
+******************************************************************************
+Enter "HELP" to show all supported commands
+Unsupported command!!
+******************************************************************************
+Enter "HELP" to show all supported commands
+Rename file for server or local? (SERVER or LOCAL): LOCAL
+Enter filename or extension to search: wwww.txt
+/u/ntaniya/CS410/CS410-510-Agile/clientlocation/wwww.txt
+******************************************************************************
+Enter "HELP" to show all supported commands

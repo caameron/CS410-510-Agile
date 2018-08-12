@@ -4,25 +4,54 @@ import sys
 import os
 import pickle
 import shutil
+import time
+from select import select
 
 currentclientpath = None
 currentserverpath = None
+currentpath = os.path.realpath("Logs")
+logfile = os.path.join(currentpath,"client.log")
+fObj = open(logfile,"a+")
+fObj.write("\n******************************************************************************")
+fObj.write("\nCurrent Session Date and Time:"+time.strftime("%c"))
+fObj.write("\n******************************************************************************")
+
+#method to print to display and logging
+def printandlog(text):
+    global fObj
+    try:
+        fObj.write("\n"+text)
+    except:
+        fObj.write("\n"+text.get_string())
+    print text
+
+#method to consume raw input and logging
+def rawinputandlog(text):
+    userin = raw_input(text)
+    fObj.write("\n"+text+userin)
+    return userin.upper()
 
 def Main(username,password):
     global table
     global currentclientpath
     global currentserverpath
+    global fObj
 
     currentclientpath = os.path.realpath("clientlocation")
 
-    host = '127.0.0.1'    #host ip
-    port = 8888        #port number
+    host = '127.0.0.1'  #host ip
+    port = 8888         #port number
 
-    s = socket.socket()    #get client socket s
-    s.connect((host,port))    #attempt to connect to server using host and port.
+    s = socket.socket()             #get client socket s
+    try:
+        s.connect((host,port))      #attempt to connect to server using host and port.
+    except:
+        printandlog("Connection refused! Please ensure Server is up and running!!")
+        return
 
-    s.send(username)    #send username that was received from command line to server to check if username exists
+    s.send(username)                #send username that was received from command line to server to check if username exists
     member = s.recv(1024)
+
     #send password next to server to validate.
     if member == 'NEW':
         s.send(password)
@@ -32,15 +61,15 @@ def Main(username,password):
     login = s.recv(1024)
     #if received login info from server is FAIL then alert that its incorrect user/pass combo and disconnect client.
     if login == "FAIL":
-        print("Incorrect username and password combination, reconnect with: python client.py username password")
+        printandlog("Incorrect username and password combination, reconnect with: python client.py username password")
         s.close()
         sys.exit()
     #if login info from server is PASS and member is EXIST then this means already existing user relogging
     if login == "PASS" and member == "EXIST":
-        print("Welcome back " + username)
+        printandlog("Welcome back " + username)
     #if login info is just PASS then new user is registered
     elif login == "PASS":
-        print("Thanks for registering on the FTP client " + username)
+        printandlog("Thanks for registering on the FTP client " + username)
 
     try:
         #this will make a folder in the client's desktop (using relative pathing) called ClientFiles. This folder will
@@ -48,14 +77,28 @@ def Main(username,password):
         os.mkdir(os.path.expanduser(currentclientpath))
     except:
         #if file already exists on desktop then just continue
-        print("CONTINUE")
+        printandlog("CONTINUE")
 
-    print("")
+    printandlog("")
     #Cameron:Added in While loop to keep asking for commands
     while True:
-        print "Enter \"HELP\" to show all supported commands"
-        action = raw_input(">>> ")
+        fObj.write("\n******************************************************************************")
+        printandlog("Enter \"HELP\" to show all supported commands")
+        sys.stdout.write("\n>>> ")
+        sys.stdout.flush()
+
+        #Dhwanil: created a timeout mechanism where client disconnects from server if idle for a minute
+        timeout = 60
+        rlist, _, _ = select([sys.stdin], [], [], timeout)
+        if rlist:
+            action = sys.stdin.readline().strip()
+         
+        else:
+            print("\n\n\nIdle for too long. Disconnecting...")
+            action = "QUIT"
+        
         action = action.upper()
+
         #Namratha: Created a command line of sorts to input commands and parameters. Enter "HELP" to get the list of all commands
         if action == "HELP":
             from prettytable import PrettyTable
@@ -73,13 +116,13 @@ def Main(username,password):
             table.add_row(["RENAME","Rename file in local or server"])
             table.add_row(["SEARCH","Search file in local or server"])
             table.add_row(["COPY","Copy directories on server"])
-            table.add_row(["HISTORY","Display log history"])
             table.add_row(["QUIT","Log Off"])
-            print(table)
+            printandlog(table)
             continue
 
         #Namratha: Check on client side to ensure only valid commands are sent to the server. Additional check is done on the server side for supported commands
-        if action not in ["GET","PUT","MKDIR","LIST","CD","DELETEFILE","DELETEDIR","RENAME","SEARCH","QUIT","GETMULTIPLE","PUTMULTIPLE","COPY","HISTORY"]:
+        if action not in ["GET","PUT","MKDIR","LIST","CD","DELETEFILE","DELETEDIR","RENAME","SEARCH","QUIT","GETMULTIPLE","PUTMULTIPLE","COPY"]:
+            printandlog("Unsupported command!!")
             continue
 
         s.send(action)          #send the attempted command to server to get server ready to perform desired command
@@ -94,12 +137,12 @@ def Main(username,password):
 
         #if command is GET then we can use this to get a file from the server (get a file from server's Serverfiles directory)
         if command == 'GET':
-            filename = raw_input("Enter filename you want to get from server: ")
+            filename = rawinputandlog("Enter filename you want to get from server: ")
             s.send(filename)
             content = s.recv(1024)
             if content[:5] == 'FOUND':    #file was found in server
                 filesize = long(content[5:])
-                response = raw_input("File to GET is " + str(filesize) + " Bytes, Proceed? (Y/N) ")
+                response = rawinputandlog("File to GET is " + str(filesize) + " Bytes, Proceed? (Y/N) ")
                 if response == 'Y':
                     s.send('OKSEND')    #tell server it can send the data now
                     completename = os.path.join(os.path.expanduser(currentclientpath),filename) #this gets full path to ClientFiles
@@ -115,26 +158,18 @@ def Main(username,password):
                         currentrec = currentrec + len(content)
                         f.write(content)
 
-                        #Namratha: commented the following lines since the code did not work on a Windows machine
-                        #os.system('clear')
-                        #progress = '['
-                        ##this will simulate a progress bar of how much of the process has completed.
-                        #for x in range (0, int(currentrec/float(filesize) * 100)):
-                        #    progress += '#'
-                        ##print current progress
-                        ##print "{0:.2f}".format((currentrec/float(filesize))*100)+ "% " + progress + "]"
-                    print("GET successful")
+                    printandlog("GET successful")
                 else:
-                    print("Aborting GET")
+                    printandlog("Aborting GET")
 
             #this else branch taken if file not found
             else:
-                print("File not found in server")
+                printandlog("File not found in server")
 
         #if command is PUT then we can use this to put a file from client (ClientFiles) to server's ServerFiles directory
         #uses similar logic as GET except almost reversed.
         elif command == 'PUT':
-            filename = raw_input("Enter filename you want to put to server: ")
+            filename = rawinputandlog("Enter filename you want to put to server: ")
             completename = os.path.join(os.path.expanduser(currentclientpath),filename)
             #if the file exists in the Client's ClientFiles directory then continue
             if os.path.isfile(completename):
@@ -143,15 +178,13 @@ def Main(username,password):
                 if feedback == 'OKSEND':
                     filesize = str(os.path.getsize(completename))
                     s.send(filesize)
-                    response = raw_input("File to PUT is " + str(filesize) + " Bytes, Proceed? (Y/N) ")
+                    response = rawinputandlog("File to PUT is " + str(filesize) + " Bytes, Proceed? (Y/N) ")
                     if response == 'Y':
                         #open the file found in client and get ready to send the data over to the server
                         with open(completename, 'rb') as f:
                             sendbyte = f.read(1024)    #this will read and return bytes from file
                             s.send(sendbyte) #send the bytes to server
                             currentsent = len(sendbyte)
-                            #print "{0:.2f}".format((currentsent/float(filesize))*100)+ "% Done"
-                            #continue to send bytes to server untill all bytes of file is sent.
                             while sendbyte != "":
                                 sendbyte = f.read(1024)
                                 s.send(sendbyte)
@@ -162,9 +195,7 @@ def Main(username,password):
                                 progress = '['
                                 for x in range (0, int(currentsent/float(filesize) * 100)):
                                                             progress += '#'
-                                #print current progress
-                                #print("{0:.2f}".format((currentsent/float(filesize))*100)+ "% " + progress + "]")
-                        print("PUT successful")
+                        printandlog("PUT successful")
                     else:
                         s.send("!!!")    #this will alert server that we aren't proceeding with PUT
 
@@ -176,61 +207,61 @@ def Main(username,password):
         #Caameron: if command is MKDIR then ask the user for the name of new directory and send it over to the
         #server to be created. Print out if successfull or not
         elif command == "MKDIR":
-            directory_name = raw_input("Enter name of directory you want to create: ")
+            directory_name = rawinputandlog("Enter name of directory you want to create: ")
             s.send(directory_name)
             feedback = s.recv(1024)
             if feedback == "DONE":
-                print("Directory Created")
+                printandlog("Directory Created")
             else:
-                print("ERROR directory not created")
+                printandlog("ERROR directory not created")
 
         #Caameron: if command is LIST ask the user if they want to display the files and directories on the local
         #or server and then print them out accordingly
         elif command == "LIST":
-            choice = raw_input("List files/directories for server or local? (SERVER or LOCAL)")
+            choice = rawinputandlog("List files/directories for server or local? (SERVER or LOCAL): ")
             s.send(choice)
             #Because this is not a list, we need to receieve it and then use pickle to load the data sent over.
             data = s.recv(1024)
             files = pickle.loads(data)
-            print('Files with have an extensions. Directories will just be a name')
+            printandlog('Files with have an extensions. Directories will just be a name')
             for file in files :
-                print('%s' % file)
+                printandlog('%s' % file)
 
         #Namratha: need to add path variable to all command methods to be able to make this work in any directory of server
         elif command == "CD":
-            choice = raw_input("Change directory in server or local? (SERVER or LOCAL): ")
+            choice = rawinputandlog("Change directory in server or local? (SERVER or LOCAL): ")
             if choice in "LOCAL":
                 s.send(choice)
-                dirname = raw_input("Enter local directory name to CD into: ")
+                dirname = rawinputandlog("Enter local directory name to CD into: ")
                 if os.path.exists(currentclientpath+"\\"+dirname):
                     currentclientpath = currentclientpath+"\\"+dirname
                     s.send(currentclientpath)
-                    print currentclientpath
+                    printandlog(currentclientpath)
                 else:
-                    print "Directory: %s does not exist. Please use LIST to see what directories exist in local!"%dirname
+                    printandlog("Directory: %s does not exist. Please use LIST to see what directories exist in local!"%dirname)
 
             elif choice in "SERVER":
                 s.send(choice)
-                dirname = raw_input("Enter server directory name to CD into: ")
+                dirname = rawinputandlog("Enter server directory name to CD into: ")
                 s.send(dirname)
                 direxists = s.recv(1024)
                 if direxists in "PASS":
-                    print "CD in server successful"
+                    printandlog("CD in server successful")
 
         elif command == "DELETEFILE":
-            choice = raw_input("Delete file in server or local? (SERVER or LOCAL): ")
-            filename = raw_input("Enter filename(s) to delete (ex: file1.txt file2.txt file2.txt ...): ")
+            choice = rawinputandlog("Delete file in server or local? (SERVER or LOCAL): ")
+            filename = rawinputandlog("Enter filename(s) to delete (ex: file1.txt file2.txt file2.txt ...): ")
             if choice in "LOCAL":
                 s.send("LOCAL")
                 filepath = currentclientpath+"\\"+filename
                 if os.path.exists(filepath):
                     os.remove(filepath)
                     if not os.path.exists(filepath):
-                        print "File \"%s\" deleted"%filename
+                        printandlog("File \"%s\" deleted"%filename)
                     else:
-                        print "Unable to delete \"%s\""%filename
+                        printandlog("Unable to delete \"%s\""%filename)
                 else:
-                    print "File \"%s\" does not exist in directory \"%s\". Please use LIST to see files in local"%(filename,currentclientpath)
+                    printandlog("File \"%s\" does not exist in directory \"%s\". Please use LIST to see files in local"%(filename,currentclientpath))
             elif choice in "SERVER":
                 s.send("SERVER")
                 s.send(filename)
@@ -238,29 +269,28 @@ def Main(username,password):
                 for filename in filelist:
                     deletestatus = s.recv(1024)
                     if deletestatus in "PASS":
-                        print "File \"%s\" deleted"%filename
+                        printandlog("File \"%s\" deleted"%filename)
                     else:
-                        print "Unable to delete %s"%filename
+                        printandlog("Unable to delete %s"%filename)
             else:
                 s.send("UNKNOWN")
                 response = s.recv(1024)
 
         elif command == "DELETEDIR":
-            choice = raw_input("Delete directory on server or local? (SERVER or LOCAL): ")
-            dirname = raw_input("Enter directory name to delete: ")
+            choice = rawinputandlog("Delete directory on server or local? (SERVER or LOCAL): ")
+            dirname = rawinputandlog("Enter directory name to delete: ")
             if choice in "LOCAL":
                 s.send("LOCAL")
-                #dirpath = currentclientpath+"\\"+dirname
                 dirpath = os.path.join(currentclientpath,dirname)
-                print "dirpath \"%s\""%dirpath
+                printandlog("dirpath \"%s\""%dirpath)
                 if os.path.exists(dirpath):
                     shutil.rmtree(dirpath)
                     if not os.path.exists(dirpath):
-                        print "Directory \"%s\" deleted"%dirname
+                        printandlog("Directory \"%s\" deleted"%dirname)
                     else:
-                        print "Unable to delete \"%s\""%dirname
+                        printandlog("Unable to delete \"%s\""%dirname)
                 else:
-                    print "Directory \"%s\" does not exist ! \"%s\". Please use LIST to see files in local"%(dirname,currentclientpath)
+                    printandlog("Directory \"%s\" does not exist ! \"%s\". Please use LIST to see files in local"%(dirname,currentclientpath))
             elif choice in "SERVER":
                 s.send("SERVER")
                 s.send(dirname)
@@ -268,10 +298,10 @@ def Main(username,password):
                 for dirname in dirlist:
                     deletestatus = s.recv(1024)
                     if deletestatus in "PASS":
-                        print "Directory \"%s\" deleted"%dirname
+                        printandlog("Directory \"%s\" deleted"%dirname)
                     else:
                         print "Unable to delete %s"%dirname
-         
+        
             else:
                 s.send("UNKNOWN")
                 response = s.recv(1024)
@@ -311,8 +341,8 @@ def Main(username,password):
 	              	
 
         elif command == "SEARCH":
-            choice = raw_input("Rename file for server or local? (SERVER or LOCAL): ")
-            fileregex = raw_input("Enter filename or extension to search: ")
+            choice = rawinputandlog("Rename file for server or local? (SERVER or LOCAL): ")
+            fileregex = rawinputandlog("Enter filename or extension to search: ")
             if choice in "LOCAL":
                 s.send("LOCAL")
                 directory = currentclientpath
@@ -320,16 +350,28 @@ def Main(username,password):
                 for dirpath, dirnames, files in os.walk(directory):
                     for name in files:
                         if fileregex.lower() in name.lower():
-                            print(os.path.join(dirpath, name))
+                            printandlog(os.path.join(dirpath, name))
                         elif not fileregex:
-                            print(os.path.join(dirpath, name))
+                            continue
+
             elif choice in "SERVER":
                 s.send("SERVER")
+                s.recv(1024)
+                s.send(fileregex)
+                searchstatus = s.recv(1024)
+                if searchstatus in "PASS":
+                    foundList = s.recv(1024)
+                    for file in foundList.lstrip("[").rstrip("]").split(","):
+                        printandlog(file)
+                else:
+                    printandlog("File not found!")
+
         elif command == "QUIT":
+            fObj.close()
             break
 
         elif command == "UNSUPPORTED":
-            print "Server does not support commmand: ", action, ". Please check again!"
+            printandlog("Server does not support commmand: ", action, ". Please check again!")
 
 
 
