@@ -31,7 +31,8 @@ def rawinputandlog(text):
     fObj.write("\n"+text+userin)
     return userin.upper()
 
-def Main(username,password):
+
+def Main(username,password, counter):
     global table
     global currentclientpath
     global currentserverpath
@@ -82,20 +83,23 @@ def Main(username,password):
     printandlog("")
     #Cameron:Added in While loop to keep asking for commands
     while True:
-        fObj.write("\n******************************************************************************")
-        printandlog("Enter \"HELP\" to show all supported commands")
-        sys.stdout.write("\n>>> ")
-        sys.stdout.flush()
+        if counter != 0:
+            action = "PUTMULTIPLE"
 
-        #Dhwanil: created a timeout mechanism where client disconnects from server if idle for a minute
-        timeout = 60
-        rlist, _, _ = select([sys.stdin], [], [], timeout)
-        if rlist:
-            action = sys.stdin.readline().strip()
-         
         else:
-            print("\n\n\nIdle for too long. Disconnecting...")
-            action = "QUIT"
+            fObj.write("\n******************************************************************************")
+            printandlog("Enter \"HELP\" to show all supported commands")
+            sys.stdout.write("\n>>> ")
+            sys.stdout.flush()
+            timeout = 60
+            rlist, _, _ = select([sys.stdin], [], [], timeout)
+            if rlist:
+                action = sys.stdin.readline().strip()
+
+            else:
+                print("\n\n\nIdle for too long. Disconnecting...")
+                action = "QUIT"
+
         
         action = action.upper()
 
@@ -125,8 +129,39 @@ def Main(username,password):
             printandlog("Unsupported command!!")
             continue
 
-        s.send(action)          #send the attempted command to server to get server ready to perform desired command
-        command = s.recv(1024)  #get verification from server that we will be performing command, get client ready.
+        
+        if action == "PUTMULTIPLE":
+            if counter == 0:
+                repeat = int(raw_input("how many files to transfer: "))
+
+            if counter == repeat:
+                action = "HELP"
+                counter = 0
+            
+            elif counter < repeat:
+                action = "PUT"
+                s.send(action)          #send the attempted command to server to get server ready to perform desired command
+                command = s.recv(1024)  #get verification from server that we will be performing command, get client ready.
+                counter += 1
+
+        elif action == "GETMULTIPLE":
+            if counter == 0:
+                repeat = int(raw_input("how many files to get: "))
+
+            if counter == repeat:
+                action = "HELP"
+                counter = 0
+            
+            elif counter < repeat:
+                action = "GET"
+                s.send(action)          #send the attempted command to server to get server ready to perform desired command
+                command = s.recv(1024)  #get verification from server that we will be performing command, get client ready.
+                counter += 1
+
+        else:
+            s.send(action)          #send the attempted command to server to get server ready to perform desired command
+            command = s.recv(1024)  #get verification from server that we will be performing command, get client ready.
+
 
         #IMPORTANT: right now the way its set up is to allow only one command before client is disconnected, if want to continue to
         #carry out commands then we need a WHILE loop for all these if statements
@@ -169,7 +204,9 @@ def Main(username,password):
         #if command is PUT then we can use this to put a file from client (ClientFiles) to server's ServerFiles directory
         #uses similar logic as GET except almost reversed.
         elif command == 'PUT':
-            filename = rawinputandlog("Enter filename you want to put to server: ")
+            if counter != 0:
+                filename = raw_input("Enter filename you want to put to server: ")
+
             completename = os.path.join(os.path.expanduser(currentclientpath),filename)
             #if the file exists in the Client's ClientFiles directory then continue
             if os.path.isfile(completename):
@@ -230,7 +267,7 @@ def Main(username,password):
         #Namratha: need to add path variable to all command methods to be able to make this work in any directory of server
         elif command == "CD":
             choice = rawinputandlog("Change directory in server or local? (SERVER or LOCAL): ")
-            if choice in "LOCAL":
+            if choice in "LOCA":
                 s.send(choice)
                 dirname = rawinputandlog("Enter local directory name to CD into: ")
                 if os.path.exists(currentclientpath+"\\"+dirname):
@@ -339,7 +376,7 @@ def Main(username,password):
             break
 
         elif command == "UNSUPPORTED":
-            printandlog("Server does not support commmand: ", action, ". Please check again!")
+            printandlog("Server does not support commmand: " + action + ". Please check again!")
 
 
 
@@ -368,4 +405,6 @@ password = sys.argv[2]
 
 #pass username and password to main function.
 if __name__ == '__main__':
-    Main(username,password)
+    counter = 0
+    getcounter = 0
+    Main(username,password, counter)

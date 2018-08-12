@@ -96,6 +96,7 @@ def clientrun(name,sock):
                         currentrec = currentrec + len(content)
                         f.write(content)
 
+
         #Caameron: if command is MKDIR then we will obtain the name of the directory from the client
         #and create a new directory in ServerFiles with that name.
         elif command == "MKDIR":
