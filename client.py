@@ -13,7 +13,7 @@ def Main(username,password):
     global currentclientpath
     global currentserverpath
 
-    currentclientpath = os.path.realpath("ClientLocation")
+    currentclientpath = os.path.realpath("clientlocation")
 
     host = '127.0.0.1'    #host ip
     port = 8888        #port number
@@ -271,12 +271,44 @@ def Main(username,password):
                         print "Directory \"%s\" deleted"%dirname
                     else:
                         print "Unable to delete %s"%dirname
+         
             else:
                 s.send("UNKNOWN")
                 response = s.recv(1024)
 
         elif command == "RENAME":
             choice = raw_input("Rename file for server or local? (SERVER or LOCAL): ")
+            changefile = raw_input("Enter filename to change: ")
+	    newname = raw_input("Enter new name: ")
+            if choice in "LOCAL":
+  		##path = os.getcwd()
+      	  	print "Current working dir : %s" % os.getcwd()        
+                # Now open a directory "/tmp"
+		fd = os.open( "clientlocation", os.O_RDONLY )
+		# Use os.fchdir() method to change the dir
+		os.fchdir(fd)
+	        # Print current working directory
+		print "Current working dir : %s" % os.getcwd()
+    ##                break	
+	        if os.path.exists(changefile) == True:
+		    os.rename(changefile, newname)
+                else:
+		    print "error!" 
+			
+      	    elif choice in "SERVER":
+		s.send("SERVER")
+	        	
+      	  	print "Current working dir : %s" % os.getcwd()        
+                # Now open a directory "/tmp"
+		fd = os.open( "serverlocation", os.O_RDONLY )
+		# Use os.fchdir() method to change the dir
+		os.fchdir(fd)
+	        # Print current working directory
+		print "Current working dir : %s" % os.getcwd()
+   
+	        if os.path.exists(changefile) == True:
+		    os.rename(changefile, newname)
+	              	
 
         elif command == "SEARCH":
             choice = raw_input("Rename file for server or local? (SERVER or LOCAL): ")
