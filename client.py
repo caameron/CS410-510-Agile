@@ -38,7 +38,7 @@ def Main(username,password, counter):
     global currentserverpath
     global fObj
 
-    currentclientpath = os.path.realpath("ClientLocation")
+    currentclientpath = os.path.realpath("clientlocation")
 
     host = '127.0.0.1'  #host ip
     port = 8888         #port number
@@ -337,13 +337,45 @@ def Main(username,password, counter):
                     if deletestatus in "PASS":
                         printandlog("Directory \"%s\" deleted"%dirname)
                     else:
-                        printandlog("Unable to delete %s"%dirname)
+                        print "Unable to delete %s"%dirname
+        
             else:
                 s.send("UNKNOWN")
                 response = s.recv(1024)
 
         elif command == "RENAME":
-            choice = rawinputandlog("Rename file for server or local? (SERVER or LOCAL): ")
+            choice = raw_input("Rename file for server or local? (SERVER or LOCAL): ")
+            changefile = raw_input("Enter filename to change: ")
+	    newname = raw_input("Enter new name: ")
+            if choice in "LOCAL":
+  		##path = os.getcwd()
+      	  	print "Current working dir : %s" % os.getcwd()        
+                # Now open a directory "/tmp"
+		fd = os.open( "clientlocation", os.O_RDONLY )
+		# Use os.fchdir() method to change the dir
+		os.fchdir(fd)
+	        # Print current working directory
+		print "Current working dir : %s" % os.getcwd()
+    ##                break	
+	        if os.path.exists(changefile) == True:
+		    os.rename(changefile, newname)
+                else:
+		    print "error!" 
+			
+      	    elif choice in "SERVER":
+		s.send("SERVER")
+	        	
+      	  	print "Current working dir : %s" % os.getcwd()        
+                # Now open a directory "/tmp"
+		fd = os.open( "serverlocation", os.O_RDONLY )
+		# Use os.fchdir() method to change the dir
+		os.fchdir(fd)
+	        # Print current working directory
+		print "Current working dir : %s" % os.getcwd()
+   
+	        if os.path.exists(changefile) == True:
+		    os.rename(changefile, newname)
+	              	
 
         elif command == "SEARCH":
             choice = rawinputandlog("Rename file for server or local? (SERVER or LOCAL): ")
