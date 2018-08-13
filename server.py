@@ -52,9 +52,33 @@ def clientrun(name,sock):
     while True:
         #print("Wait for command")
         command = sock.recv(1024)
+	print "Command: ",command
+	if command == "PUTMULTIPLE":
+	    sock.send("PUTMULTIPLE")
+            filecount = int(sock.recv(1024))
+	    print "Filecount: ",filecount        
+ 	    for file in range(0,int(filecount)):
+                filename = sock.recv(1024)
+                #if filename is valid proceed
+                if filename != '!!!':
+                    sock.send("OKSEND")
+                    filesize = long(sock.recv(1024))
+                    completename = os.path.join(os.path.expanduser(currentserverpath),filename)
+                    content = sock.recv(1024)
+                    if content != '!!!':
+                        f = open(completename, 'wb')
+                        currentrec = len(content)
+                        f.write(content)
+                        #continue to receive data from client untill current recieve
+                        #equals the filesize.
+                        while currentrec < filesize:
+                            content = sock.recv(1024)
+                            currentrec = currentrec + len(content)
+                            f.write(content)
+
         #if command is GET then get ready to send file to client.
         #send file from Serverfiles to client's ClientFiles directory.
-        if command == "GET":
+	elif command == "GET":
             sock.send("GET")    #send this command back to client to verify action
             filename = sock.recv(1024)
             #get the complete relative path to ServerFiles
@@ -72,6 +96,28 @@ def clientrun(name,sock):
                             sendbyte = f.read(1024)
             else:
                 sock.send("NOFOUND")
+
+        elif command == "GETMULTIPLE":
+            sock.send("GETMULTIPLE")
+            filecount = int(sock.recv(1024))
+            print "Filecount: ",filecount
+            for file in range(0,int(filecount)):
+                filename = sock.recv(1024)
+	        #get the complete relative path to ServerFiles
+                completename = os.path.join(os.path.expanduser(currentserverpath),filename)
+                #check if file exists in ServerFiles directory
+                if os.path.isfile(completename):
+                    sock.send("FOUND " + str(os.path.getsize(completename)))
+                    response = sock.recv(1024)
+                    if response[:6] == 'OKSEND':
+                        #open file and start sending bytes to client untill all is sent
+                        with open(completename, 'rb') as f:
+                            sendbyte = f.read(1024)
+                            while sendbyte != "": 
+                                sock.send(sendbyte)
+                                sendbyte = f.read(1024)
+                else:
+                    sock.send("NOFOUND")
 
         #if command is PUT then get ready to recieve file from client.
         #recieve file from Clientfiles to server's ServerFiles directory.
