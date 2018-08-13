@@ -65,7 +65,7 @@ def Main(username,password, counter):
     login = s.recv(1024)
     #if received login info from server is FAIL then alert that its incorrect user/pass combo and disconnect client.
     if login == "FAIL":
-        printandlog("Incorrect username and password combination, reconnect with: python client.py username password")
+        printandlog("Incorrect username and password combination, reconnect with: python client.py <username> <password>")
         s.close()
         sys.exit()
     #if login info from server is PASS and member is EXIST then this means already existing user relogging
@@ -86,23 +86,19 @@ def Main(username,password, counter):
     printandlog("")
     #Cameron:Added in While loop to keep asking for commands
     while True:
-        if counter != 0:
-            action = "PUTMULTIPLE"
-
+        fObj.write("\n******************************************************************************")
+        printandlog("Enter \"HELP\" to show all supported commands")
+        sys.stdout.write("\n>>> ")
+        sys.stdout.flush()
+        timeout = 60
+        rlist, _, _ = select([sys.stdin], [], [], timeout)
+        if rlist:
+            action = sys.stdin.readline().strip()
         else:
-            fObj.write("\n******************************************************************************")
-            printandlog("Enter \"HELP\" to show all supported commands")
-            sys.stdout.write("\n>>> ")
-            sys.stdout.flush()
-            timeout = 60
-            rlist, _, _ = select([sys.stdin], [], [], timeout)
-            if rlist:
-                action = sys.stdin.readline().strip()
-            else:
-                print("\n\n\nIdle for too long. Disconnecting...")
-                action = "QUIT"
+            print("\n\n\nIdle for too long. Disconnecting...")
+            action = "QUIT"
 
-        action = action.upper()
+        action = action.upper()	
 
         #Namratha: Created a command line of sorts to input commands and parameters. Enter "HELP" to get the list of all commands
         if action == "HELP":
@@ -131,37 +127,8 @@ def Main(username,password, counter):
             continue
 
 
-        if action == "PUTMULTIPLE":
-            if counter == 0:
-                repeat = int(raw_input("how many files to transfer: "))
-
-            if counter == repeat:
-                action = "HELP"
-                counter = 0
-
-            elif counter < repeat:
-                action = "PUT"
-                s.send(action)          #send the attempted command to server to get server ready to perform desired command
-                command = s.recv(1024)  #get verification from server that we will be performing command, get client ready.
-                counter += 1
-
-        elif action == "GETMULTIPLE":
-            if counter == 0:
-                repeat = int(raw_input("how many files to get: "))
-
-            if counter == repeat:
-                action = "HELP"
-                counter = 0
-
-            elif counter < repeat:
-                action = "GET"
-                s.send(action)          #send the attempted command to server to get server ready to perform desired command
-                command = s.recv(1024)  #get verification from server that we will be performing command, get client ready.
-                counter += 1
-
-        else:
-            s.send(action)          #send the attempted command to server to get server ready to perform desired command
-            command = s.recv(1024)  #get verification from server that we will be performing command, get client ready.
+        s.send(action)          #send the attempted command to server to get server ready to perform desired command
+        command = s.recv(1024)  #get verification from server that we will be performing command, get client ready.
 
 
         #IMPORTANT: right now the way its set up is to allow only one command before client is disconnected, if want to continue to
@@ -202,11 +169,44 @@ def Main(username,password, counter):
             else:
                 printandlog("File not found in server")
 
+	elif command == 'GETMULTIPLE':
+	    filecount = rawinputandlog("Enter the number of files you want to get from server: ")
+            s.send(filecount)
+            for file in range(0,int(filecount)):
+		filename = rawinputandlog("Enter filename you want to get from server: ",upper=False)
+            	s.send(filename)
+                content = s.recv(1024)
+                if content[:5] == 'FOUND':    #file was found in server
+                    filesize = long(content[5:])
+                    response = rawinputandlog("File to GET is " + str(filesize) + " Bytes, Proceed? (Y/N) ")
+                    if response == 'Y':
+                        s.send('OKSEND')    #tell server it can send the data now
+                        completename = os.path.join(os.path.expanduser(currentclientpath),filename) #this gets full path to ClientFiles
+                        #get ready to write the file to ClientFiles
+                        f = open(completename, 'wb')
+                        content = s.recv(1024) #initial receive of data from server
+                        currentrec = len(content)
+                        f.write(content)
+
+                        #while the currentrecieved data is less than the actual size of data keep recieving bytes
+                        while currentrec < filesize:
+                            content = s.recv(1024)
+                            currentrec = currentrec + len(content)
+                            f.write(content)
+
+                        printandlog("GET successful")
+                    else:
+                        printandlog("Aborting GET")
+
+                #this else branch taken if file not found
+                else:
+                    printandlog("File not found in server")
+
+
         #if command is PUT then we can use this to put a file from client (ClientFiles) to server's ServerFiles directory
         #uses similar logic as GET except almost reversed.
         elif command == 'PUT':
-            if counter != 0:
-            	filename = rawinputandlog("Enter filename you want to put to server: ",upper=False)
+            filename = rawinputandlog("Enter filename you want to put to server: ",upper=False)
 
             completename = os.path.join(os.path.expanduser(currentclientpath),filename)
             #if the file exists in the Client's ClientFiles directory then continue
@@ -228,11 +228,6 @@ def Main(username,password, counter):
                                 s.send(sendbyte)
                                 currentsent += len(sendbyte)
 
-                                #like in SET, below will simulate a progress bar.
-                                os.system('clear')
-                                progress = '['
-                                for x in range (0, int(currentsent/float(filesize) * 100)):
-                                                            progress += '#'
                         printandlog("PUT successful")
                     else:
                         s.send("!!!")    #this will alert server that we aren't proceeding with PUT
@@ -241,6 +236,40 @@ def Main(username,password, counter):
             else:
                 s.send("!!!")    #this will alert the server that we aren't proceeding with PUT
                 print("File not found in client")
+
+	elif command == "PUTMULTIPLE":
+	    filecount = rawinputandlog("Enter the number of files you want to upload to server: ")
+            s.send(filecount) 
+            for file in range(0,int(filecount)):	
+		filename = rawinputandlog("Enter filename you want to put to server: ",upper=False)
+                completename = os.path.join(os.path.expanduser(currentclientpath),filename)
+                #if the file exists in the Client's ClientFiles directory then continue
+                if os.path.isfile(completename):
+                    s.send(filename)
+                    feedback = s.recv(1024)
+                    if feedback == 'OKSEND':
+                        filesize = str(os.path.getsize(completename))
+                        s.send(filesize)
+                        response = rawinputandlog("File to PUT is " + str(filesize) + " Bytes, Proceed? (Y/N) ")
+                        if response == 'Y':
+                            #open the file found in client and get ready to send the data over to the server
+                            with open(completename, 'rb') as f:
+                                sendbyte = f.read(1024)    #this will read and return bytes from file
+                                s.send(sendbyte) #send the bytes to server
+                                currentsent = len(sendbyte)
+                                while sendbyte != "":
+                                    sendbyte = f.read(1024)
+                                    s.send(sendbyte)
+                                    currentsent += len(sendbyte)
+
+                            printandlog("PUT successful!")
+                        else:
+                            s.send("!!!")    #this will alert server that we aren't proceeding with PUT
+    
+                #This branch taken if file not found in client.
+                else:
+		    printandlog("Unable to find file: %s"%completename)
+                    s.send("!!!")    #this will alert the server that we aren't proceeding with PUT
 
         #Caameron: if command is MKDIR then ask the user for the name of new directory and send it over to the
         #server to be created. Print out if successfull or not
@@ -291,15 +320,17 @@ def Main(username,password, counter):
             filename = rawinputandlog("Enter filename(s) to delete (ex: file1.txt file2.txt file2.txt ...): ",upper=False)
             if choice in "LOCAL":
                 s.send("LOCAL")
-                filepath = currentclientpath+"\\"+filename
-                if os.path.exists(filepath):
-                    os.remove(filepath)
-                    if not os.path.exists(filepath):
-                        printandlog("File \"%s\" deleted"%filename)
+		filelist = filename.split(" ")
+		for file in filelist:
+                    filepath = os.path.join(currentclientpath,file)
+                    if os.path.exists(filepath):
+                        os.remove(filepath)
+                        if not os.path.exists(filepath):
+                            printandlog("File \"%s\" deleted"%file)
+                        else:
+                            printandlog("Unable to delete \"%s\""%file)
                     else:
-                        printandlog("Unable to delete \"%s\""%filename)
-                else:
-                    printandlog("File \"%s\" does not exist in directory \"%s\". Please use LIST to see files in local"%(filename,currentclientpath))
+                        printandlog("File \"%s\" does not exist in directory \"%s\". Please use LIST to see files in local"%(filename,currentclientpath))
             elif choice in "SERVER":
                 s.send("SERVER")
                 s.send(filename)
@@ -401,7 +432,7 @@ def Main(username,password, counter):
             break
 
         elif command == "UNSUPPORTED":
-            printandlog("Server does not support commmand: " + action + ". Please check again!")
+            printandlog("Server does not support commmand: " + command + ". Please check again!")
 
 
 
