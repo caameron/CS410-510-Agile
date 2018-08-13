@@ -26,10 +26,13 @@ def printandlog(text):
     print text
 
 #method to consume raw input and logging
-def rawinputandlog(text):
+def rawinputandlog(text,upper=True):
     userin = raw_input(text)
     fObj.write("\n"+text+userin)
-    return userin.upper()
+    if upper is True:
+        return userin.upper()
+    else:
+        return userin
 
 
 def Main(username,password, counter):
@@ -95,12 +98,10 @@ def Main(username,password, counter):
             rlist, _, _ = select([sys.stdin], [], [], timeout)
             if rlist:
                 action = sys.stdin.readline().strip()
-
             else:
                 print("\n\n\nIdle for too long. Disconnecting...")
                 action = "QUIT"
 
-        
         action = action.upper()
 
         #Namratha: Created a command line of sorts to input commands and parameters. Enter "HELP" to get the list of all commands
@@ -129,7 +130,7 @@ def Main(username,password, counter):
             printandlog("Unsupported command!!")
             continue
 
-        
+
         if action == "PUTMULTIPLE":
             if counter == 0:
                 repeat = int(raw_input("how many files to transfer: "))
@@ -137,7 +138,7 @@ def Main(username,password, counter):
             if counter == repeat:
                 action = "HELP"
                 counter = 0
-            
+
             elif counter < repeat:
                 action = "PUT"
                 s.send(action)          #send the attempted command to server to get server ready to perform desired command
@@ -151,7 +152,7 @@ def Main(username,password, counter):
             if counter == repeat:
                 action = "HELP"
                 counter = 0
-            
+
             elif counter < repeat:
                 action = "GET"
                 s.send(action)          #send the attempted command to server to get server ready to perform desired command
@@ -172,7 +173,7 @@ def Main(username,password, counter):
 
         #if command is GET then we can use this to get a file from the server (get a file from server's Serverfiles directory)
         if command == 'GET':
-            filename = rawinputandlog("Enter filename you want to get from server: ")
+            filename = rawinputandlog("Enter filename you want to get from server: ",upper=False)
             s.send(filename)
             content = s.recv(1024)
             if content[:5] == 'FOUND':    #file was found in server
@@ -205,7 +206,7 @@ def Main(username,password, counter):
         #uses similar logic as GET except almost reversed.
         elif command == 'PUT':
             if counter != 0:
-                filename = raw_input("Enter filename you want to put to server: ")
+            	filename = rawinputandlog("Enter filename you want to put to server: ",upper=False)
 
             completename = os.path.join(os.path.expanduser(currentclientpath),filename)
             #if the file exists in the Client's ClientFiles directory then continue
@@ -244,7 +245,7 @@ def Main(username,password, counter):
         #Caameron: if command is MKDIR then ask the user for the name of new directory and send it over to the
         #server to be created. Print out if successfull or not
         elif command == "MKDIR":
-            directory_name = rawinputandlog("Enter name of directory you want to create: ")
+            directory_name = rawinputandlog("Enter name of directory you want to create: ",upper=False)
             s.send(directory_name)
             feedback = s.recv(1024)
             if feedback == "DONE":
@@ -267,9 +268,9 @@ def Main(username,password, counter):
         #Namratha: need to add path variable to all command methods to be able to make this work in any directory of server
         elif command == "CD":
             choice = rawinputandlog("Change directory in server or local? (SERVER or LOCAL): ")
-            if choice in "LOCA":
+            if choice in "LOCAL":
                 s.send(choice)
-                dirname = rawinputandlog("Enter local directory name to CD into: ")
+                dirname = rawinputandlog("Enter local directory name to CD into: ",upper=False)
                 if os.path.exists(currentclientpath+"\\"+dirname):
                     currentclientpath = currentclientpath+"\\"+dirname
                     s.send(currentclientpath)
@@ -279,7 +280,7 @@ def Main(username,password, counter):
 
             elif choice in "SERVER":
                 s.send(choice)
-                dirname = rawinputandlog("Enter server directory name to CD into: ")
+                dirname = rawinputandlog("Enter server directory name to CD into: ",upper=False)
                 s.send(dirname)
                 direxists = s.recv(1024)
                 if direxists in "PASS":
@@ -287,7 +288,7 @@ def Main(username,password, counter):
 
         elif command == "DELETEFILE":
             choice = rawinputandlog("Delete file in server or local? (SERVER or LOCAL): ")
-            filename = rawinputandlog("Enter filename(s) to delete (ex: file1.txt file2.txt file2.txt ...): ")
+            filename = rawinputandlog("Enter filename(s) to delete (ex: file1.txt file2.txt file2.txt ...): ",upper=False)
             if choice in "LOCAL":
                 s.send("LOCAL")
                 filepath = currentclientpath+"\\"+filename
@@ -315,7 +316,7 @@ def Main(username,password, counter):
 
         elif command == "DELETEDIR":
             choice = rawinputandlog("Delete directory on server or local? (SERVER or LOCAL): ")
-            dirname = rawinputandlog("Enter directory name to delete: ")
+            dirname = rawinputandlog("Enter directory name to delete: ",upper=False)
             if choice in "LOCAL":
                 s.send("LOCAL")
                 dirpath = os.path.join(currentclientpath,dirname)
@@ -338,48 +339,40 @@ def Main(username,password, counter):
                         printandlog("Directory \"%s\" deleted"%dirname)
                     else:
                         print "Unable to delete %s"%dirname
-        
+
             else:
                 s.send("UNKNOWN")
                 response = s.recv(1024)
 
         elif command == "RENAME":
-            choice = raw_input("Rename file for server or local? (SERVER or LOCAL): ")
-            changefile = raw_input("Enter filename to change: ")
-	    newname = raw_input("Enter new name: ")
+            choice = rawinputandlog("Rename file for server or local? (SERVER or LOCAL): ")
+            changefile = rawinputandlog("Enter filename to change: ",upper=False)
+	    newname = rawinputandlog("Enter new name: ",upper=False)
             if choice in "LOCAL":
-  		##path = os.getcwd()
-      	  	print "Current working dir : %s" % os.getcwd()        
-                # Now open a directory "/tmp"
-		fd = os.open( "clientlocation", os.O_RDONLY )
-		# Use os.fchdir() method to change the dir
+		s.send("LOCAL")
+      	  	printandlog("Current working dir : %s" %currentclientpath)
+		fd = os.open(currentclientpath,os.O_RDONLY)
 		os.fchdir(fd)
-	        # Print current working directory
-		print "Current working dir : %s" % os.getcwd()
-    ##                break	
 	        if os.path.exists(changefile) == True:
-		    os.rename(changefile, newname)
+		    os.rename(changefile,newname)
                 else:
-		    print "error!" 
-			
+		    printandlog("Error renaming file: %s"%changefile)
+
       	    elif choice in "SERVER":
 		s.send("SERVER")
-	        	
-      	  	print "Current working dir : %s" % os.getcwd()        
-                # Now open a directory "/tmp"
-		fd = os.open( "serverlocation", os.O_RDONLY )
-		# Use os.fchdir() method to change the dir
-		os.fchdir(fd)
-	        # Print current working directory
-		print "Current working dir : %s" % os.getcwd()
-   
-	        if os.path.exists(changefile) == True:
-		    os.rename(changefile, newname)
-	              	
+		status = s.recv(1024)
+		s.send(changefile)
+		status = s.recv(1024)
+		s.send(newname)
+		rename_status = s.recv(1024)
+		if rename_status in "TRUE":
+		    printandlog("Rename successful!")
+		else:
+		    printandlog("Rename failed!")
 
         elif command == "SEARCH":
             choice = rawinputandlog("Rename file for server or local? (SERVER or LOCAL): ")
-            fileregex = rawinputandlog("Enter filename or extension to search: ")
+            fileregex = rawinputandlog("Enter filename or extension to search: ",upper=False)
             if choice in "LOCAL":
                 s.send("LOCAL")
                 directory = currentclientpath

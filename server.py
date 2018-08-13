@@ -130,12 +130,12 @@ def clientrun(name,sock):
                 print "Current client path: ",currentclientpath
             elif choice in "SERVER":
                 dirname = sock.recv(1024)
-                if os.path.exists(currentserverpath+"\\"+dirname):
-                    currentserverpath = currentserverpath+"\\"+dirname
+                if os.path.exists(os.path.join(currentserverpath,dirname)):
+                    currentserverpath = os.path.join(currentserverpath,dirname)
                     print "Current server path: ", currentserverpath
                     sock.send("PASS")
                 else:
-                    print "Path: ",currentserverpath+"\\"+dirname, " does not exist on server"
+                    print "Path: %s does not exist on server" %currentserverpath
                     sock.send("FAIL")
 
         elif command == "DELETEFILE":
@@ -147,7 +147,7 @@ def clientrun(name,sock):
                 filenames = sock.recv(1024)
                 filelist = filenames.split(" ")
                 for filename in filelist:
-                    filepath = currentserverpath+"\\"+filename
+                    filepath = os.path.join(currentserverpath,filename)
                     if os.path.exists(filepath):
                         os.remove(filepath)
                         if not os.path.exists(filepath):
@@ -189,6 +189,30 @@ def clientrun(name,sock):
 
         elif command == "RENAME":
             sock.send("RENAME")
+     	    choice = sock.recv(1024)
+	    print "Choice: ",choice
+	    if choice in "LOCAL":
+	        pass
+	    elif choice in "SERVER":
+                sock.send("TRUE")
+	        changefile = sock.recv(1024)
+                sock.send("TRUE")
+		newname = sock.recv(1024)
+      	  	print "Current working dir : %s" %currentserverpath
+		fd = os.open(currentserverpath,os.O_RDONLY)
+		os.fchdir(fd)
+		print "Changefile: ",changefile
+	        if os.path.exists(changefile) == True:
+		    os.rename(changefile,newname)
+		    sock.send("TRUE")
+                else:
+		    print "Error renaming file: %s"%changefile
+		    sock.send("FALSE")
+
+		
+ 
+	    else:
+                pass
 
         elif command == "SEARCH":
             sock.send("SEARCH")
@@ -222,21 +246,6 @@ def clientrun(name,sock):
 
         else:
             sock.send("UNSUPPORTED")
-
-        #Wait for response if the user wants to complete another command.
-        #Loop breaks if client doesn't respond 'again'
-        #continue_response = sock.recv(1024)
-        #if continue_response != 'again':
-        #    break
-##      other commands can go here in if statements like list directories, etc.
-##      just be sure to also implement the complementary command for the client.
-##      for example:
-
-##      elif command == 'LISTSERVER':
-##        sock.send('LISTSERVER')
-##              enter code here to list files and directories found in server (aka files found in ServerFiles)
-
-
 
 def Main():
     global currentclientpath
