@@ -90,7 +90,7 @@ def Main(username,password, counter):
         printandlog("Enter \"HELP\" to show all supported commands")
         sys.stdout.write("\n>>> ")
         sys.stdout.flush()
-        timeout = 60
+        timeout = 600
         rlist, _, _ = select([sys.stdin], [], [], timeout)
         if rlist:
             action = sys.stdin.readline().strip()
@@ -289,7 +289,9 @@ def Main(username,password, counter):
             s.send(choice)
             #Because this is not a list, we need to receieve it and then use pickle to load the data sent over.
             data = s.recv(1024)
-            files = pickle.loads(data)
+	    if data == "UNKNOWN":            
+		continue
+	    files = pickle.loads(data)
             printandlog('Files with have an extensions. Directories will just be a name')
             for file in files :
                 printandlog('%s' % file)
@@ -297,17 +299,18 @@ def Main(username,password, counter):
         #Namratha: need to add path variable to all command methods to be able to make this work in any directory of server
         elif command == "CD":
             choice = rawinputandlog("Change directory in server or local? (SERVER or LOCAL): ")
-            if choice in "LOCAL":
+            if choice == "LOCAL":
                 s.send(choice)
                 dirname = rawinputandlog("Enter local directory name to CD into: ",upper=False)
-                if os.path.exists(currentclientpath+"\\"+dirname):
-                    currentclientpath = currentclientpath+"\\"+dirname
+                if os.path.exists(os.path.join(currentclientpath,dirname)):
+                    currentclientpath = os.path.join(currentclientpath,dirname)
                     s.send(currentclientpath)
                     printandlog(currentclientpath)
                 else:
+		    s.send("UNKNOWN")
                     printandlog("Directory: %s does not exist. Please use LIST to see what directories exist in local!"%dirname)
 
-            elif choice in "SERVER":
+            elif choice == "SERVER":
                 s.send(choice)
                 dirname = rawinputandlog("Enter server directory name to CD into: ",upper=False)
                 s.send(dirname)
@@ -315,15 +318,20 @@ def Main(username,password, counter):
                 if direxists in "PASS":
                     printandlog("CD in server successful")
 
+	    else:
+		printandlog("Invalid choice: %s"%choice)
+		s.send("UNKNOWN")
+		continue
+
         elif command == "DELETEFILE":
             choice = rawinputandlog("Delete file in server or local? (SERVER or LOCAL): ")
             filename = rawinputandlog("Enter filename(s) to delete (ex: file1.txt file2.txt file2.txt ...): ",upper=False)
-            if choice in "LOCAL":
+            if choice == "LOCAL":
                 s.send("LOCAL")
 		filelist = filename.split(" ")
 		for file in filelist:
                     filepath = os.path.join(currentclientpath,file)
-                    if os.path.exists(filepath):
+                    if os.path.isfile(filepath):
                         os.remove(filepath)
                         if not os.path.exists(filepath):
                             printandlog("File \"%s\" deleted"%file)
@@ -331,7 +339,7 @@ def Main(username,password, counter):
                             printandlog("Unable to delete \"%s\""%file)
                     else:
                         printandlog("File \"%s\" does not exist in directory \"%s\". Please use LIST to see files in local"%(filename,currentclientpath))
-            elif choice in "SERVER":
+            elif choice == "SERVER":
                 s.send("SERVER")
                 s.send(filename)
                 filelist = filename.split(" ")
@@ -348,11 +356,11 @@ def Main(username,password, counter):
         elif command == "DELETEDIR":
             choice = rawinputandlog("Delete directory on server or local? (SERVER or LOCAL): ")
             dirname = rawinputandlog("Enter directory name to delete: ",upper=False)
-            if choice in "LOCAL":
+            if choice == "LOCAL":
                 s.send("LOCAL")
                 dirpath = os.path.join(currentclientpath,dirname)
                 printandlog("dirpath \"%s\""%dirpath)
-                if os.path.exists(dirpath):
+                if os.path.isdir(dirpath):
                     shutil.rmtree(dirpath)
                     if not os.path.exists(dirpath):
                         printandlog("Directory \"%s\" deleted"%dirname)
@@ -360,7 +368,7 @@ def Main(username,password, counter):
                         printandlog("Unable to delete \"%s\""%dirname)
                 else:
                     printandlog("Directory \"%s\" does not exist ! \"%s\". Please use LIST to see files in local"%(dirname,currentclientpath))
-            elif choice in "SERVER":
+            elif choice == "SERVER":
                 s.send("SERVER")
                 s.send(dirname)
                 dirlist = dirname.split(" ")
@@ -377,9 +385,9 @@ def Main(username,password, counter):
 
         elif command == "RENAME":
             choice = rawinputandlog("Rename file for server or local? (SERVER or LOCAL): ")
-            changefile = rawinputandlog("Enter filename to change: ",upper=False)
-	    newname = rawinputandlog("Enter new name: ",upper=False)
-            if choice in "LOCAL":
+            if choice == "LOCAL":
+	    	changefile = rawinputandlog("Enter filename to change: ",upper=False)
+	    	newname = rawinputandlog("Enter new name: ",upper=False)
 		s.send("LOCAL")
       	  	printandlog("Current working dir : %s" %currentclientpath)
 		fd = os.open(currentclientpath,os.O_RDONLY)
@@ -389,7 +397,9 @@ def Main(username,password, counter):
                 else:
 		    printandlog("Error renaming file: %s"%changefile)
 
-      	    elif choice in "SERVER":
+      	    elif choice == "SERVER":
+	    	changefile = rawinputandlog("Enter filename to change: ",upper=False)
+	    	newname = rawinputandlog("Enter new name: ",upper=False)
 		s.send("SERVER")
 		status = s.recv(1024)
 		s.send(changefile)
@@ -400,11 +410,16 @@ def Main(username,password, counter):
 		    printandlog("Rename successful!")
 		else:
 		    printandlog("Rename failed!")
+            
+	    else:
+		s.send("UNKNOWN")
+		printandlog("Invalid choice: %s"%choice)
+	        continue
 
         elif command == "SEARCH":
-            choice = rawinputandlog("Rename file for server or local? (SERVER or LOCAL): ")
-            fileregex = rawinputandlog("Enter filename or extension to search: ",upper=False)
-            if choice in "LOCAL":
+            choice = rawinputandlog("Search file for server or local? (SERVER or LOCAL): ")
+            if choice == "LOCAL":
+                fileregex = rawinputandlog("Enter filename or extension to search (FILES ONLY): ",upper=False)
                 s.send("LOCAL")
                 directory = currentclientpath
                 fileregex = fileregex.lower()
@@ -415,7 +430,8 @@ def Main(username,password, counter):
                         elif not fileregex:
                             continue
 
-            elif choice in "SERVER":
+            elif choice == "SERVER":
+                fileregex = rawinputandlog("Enter filename or extension to search: ",upper=False)
                 s.send("SERVER")
                 s.recv(1024)
                 s.send(fileregex)
@@ -426,7 +442,12 @@ def Main(username,password, counter):
                         printandlog(file)
                 else:
                     printandlog("File not found!")
-
+            
+	    else:
+		s.send("UNKNOWN")
+		printandlog("Invalid choice: %s"%choice)
+	        continue
+		
         elif command == "QUIT":
             fObj.close()
             break
