@@ -149,7 +149,12 @@ def clientrun(name,sock):
             sock.send("MKDIR")
             directory_name = sock.recv(1024)
             dirpath = os.path.join(currentserverpath,directory_name)
-            os.mkdir(dirpath)
+            try:
+		os.mkdir(dirpath)
+	    except:
+		print "Could not create directory. Please check if directory exists"
+		sock.send("FAIL")
+		continue
             sock.send("DONE")
 
         #Caameron: if command is LIST then ask the user if they want to display the local or server
@@ -167,14 +172,21 @@ def clientrun(name,sock):
                 files = os.listdir(os.path.expanduser(currentclientpath))
                 send_files = pickle.dumps(files)
                 sock.send(send_files)
+            else:
+		sock.send("UNKNOWN")
 
         elif command == "CD":
             sock.send("CD")
             choice=sock.recv(1024)
-            if choice in "LOCAL":
-                currentclientpath = sock.recv(1024)
+            if choice == "LOCAL":
+		print "LOCAL CD. Waiting for new currentclientpath"
+                path = sock.recv(1024)
+                if path == "UNKNOWN":
+		    print "CD in LOCAL failed!"
+		    continue
                 print "Current client path: ",currentclientpath
-            elif choice in "SERVER":
+            elif choice == "SERVER":
+		print "SERVER CD. Waiting for new currentserverpath"
                 dirname = sock.recv(1024)
                 if os.path.exists(os.path.join(currentserverpath,dirname)):
                     currentserverpath = os.path.join(currentserverpath,dirname)
@@ -183,6 +195,9 @@ def clientrun(name,sock):
                 else:
                     print "Path: %s does not exist on server" %currentserverpath
                     sock.send("FAIL")
+	    else:
+	        print "Unknown choice"	
+		continue
 
         elif command == "DELETEFILE":
             sock.send("DELETEFILE")
@@ -194,7 +209,7 @@ def clientrun(name,sock):
                 filelist = filenames.split(" ")
                 for filename in filelist:
                     filepath = os.path.join(currentserverpath,filename)
-                    if os.path.exists(filepath):
+                    if os.path.isfile(filepath):
                         os.remove(filepath)
                         if not os.path.exists(filepath):
                             print "File \"%s\" deleted"%filename
@@ -219,7 +234,7 @@ def clientrun(name,sock):
                 for dirname in dirlist:
                     dirpath = os.path.join(currentserverpath,dirname)
                     print "dirpath \"%s\""%dirpath
-                    if os.path.exists(dirpath):
+                    if os.path.isdir(dirpath):
                         shutil.rmtree(dirpath)
                         if not os.path.exists(dirpath):
                             print "Directory \"%s\" deleted"%dirname
@@ -254,11 +269,8 @@ def clientrun(name,sock):
                 else:
 		    print "Error renaming file: %s"%changefile
 		    sock.send("FALSE")
-
-		
- 
-	    else:
-                pass
+            else:
+		print "Invalid choice: %s"%choice
 
         elif command == "SEARCH":
             sock.send("SEARCH")
@@ -283,6 +295,8 @@ def clientrun(name,sock):
                 else:
                     sock.send("PASS")
                     sock.send(str(foundList))
+            else:
+		print "Invalid choice: %s"%choice
 
         elif command == "QUIT":
             sock.send("QUIT")
