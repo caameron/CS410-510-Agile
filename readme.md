@@ -11,11 +11,12 @@ Pre-Requisites
 Run server in command line: python server.py
 Run client in command line: python client.py username password
 
-Run the server first, then other clients can connect. Right now the default host ip is local host.
+Run the server first, then other clients can connect. Right now the default host ip is local host (127.0.0.1)
 Server will continue to run forever while clients connect. 
 
-When server first connects it will make ServerFiles on desktop.
-When clients connect, a ClientFiles directory will be made on desktop.
+When server first connects it will make Serverlocation directory on current working directory of server.
+When clients connect, a Clientlocation directory will be made on current working directory of client.
 These two directories are the primary means of transfer between files.
 
-When client successfully connects, will be prompted with choosing a command.
+When client successfully connects, will be prompted with choosing a command. Use help command to display all possible commands.
+Clients can continue to issue commands untill desired or client connection ends with server. 
