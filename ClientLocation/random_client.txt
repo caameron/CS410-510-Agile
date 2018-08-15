@@ -1,0 +1,2 @@
+this is a random text file on the client side
+it will be transfered
