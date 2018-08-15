@@ -20,3 +20,5 @@ These two directories are the primary means of transfer between files.
 
 When client successfully connects, will be prompted with choosing a command. Use help command to display all possible commands.
 Clients can continue to issue commands untill desired or client connection ends with server. 
+
+NOTE: This project is built on Unix and has not been tested on Windows.
