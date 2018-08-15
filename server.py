@@ -4,8 +4,8 @@ import os
 import pickle
 import shutil
 #Global variables
-currentserverpath = None
-currentclientpath = None
+currentserverpath = None #will hold path to serverlocation directory
+currentclientpath = None #will hold path to clientlocation directory
 users = []    ##this is a list of tuples storing username and password like (username, password).
 
 #function to be run by each socket thread
@@ -312,11 +312,13 @@ def clientrun(name,sock):
         else:
             sock.send("UNSUPPORTED")
 
+##can add more commands as if statements here if needed for FUTURE DEVELOPMENT
+
 def Main():
     global currentclientpath
     global currentserverpath
 
-    host = '127.0.0.1'    #host ip of server
+    host = '127.0.0.1'    #host ip of server (local)
     port = 8888    #port of server
 
     try:
