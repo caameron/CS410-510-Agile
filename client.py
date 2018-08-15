@@ -118,13 +118,13 @@ def Main(username,password):
             table.add_row(["DELETEDIR","Delete directory"])
             table.add_row(["RENAME","Rename file in local or server"])
             table.add_row(["SEARCH","Search file in local or server"])
-            table.add_row(["COPY","Copy directories on server"])
+            #table.add_row(["COPY","Copy directories on server"])
             table.add_row(["QUIT","Log Off"])
             printandlog(table)
             continue
 
         #Namratha: Check on client side to ensure only valid commands are sent to the server. Additional check is done on the server side for supported commands
-        if action not in ["GET","PUT","MKDIR","LIST","CD","DELETEFILE","DELETEDIR","RENAME","SEARCH","QUIT","GETMULTIPLE","PUTMULTIPLE","COPY"]:
+        if action not in ["GET","PUT","MKDIR","LIST","CD","DELETEFILE","DELETEDIR","RENAME","SEARCH","QUIT","GETMULTIPLE","PUTMULTIPLE"]:
             printandlog("Unsupported command!!")
             continue
 
