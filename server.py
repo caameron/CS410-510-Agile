@@ -53,6 +53,9 @@ def clientrun(name,sock):
         #print("Wait for command")
         command = sock.recv(1024)
 	print "Command: ",command
+
+        #server side putmultiple code to receive the file from the client side and put it in the remote server folder
+        #sends specific number of bytes over the socket
 	if command == "PUTMULTIPLE":
 	    sock.send("PUTMULTIPLE")
             filecount = int(sock.recv(1024))
@@ -97,6 +100,8 @@ def clientrun(name,sock):
             else:
                 sock.send("NOFOUND")
 
+        #get multiple server side: gets the file from the remote server to the client
+        #filecount and name provided by the client side. 
         elif command == "GETMULTIPLE":
             sock.send("GETMULTIPLE")
             filecount = int(sock.recv(1024))

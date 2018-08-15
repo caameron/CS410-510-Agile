@@ -35,7 +35,7 @@ def rawinputandlog(text,upper=True):
         return userin
 
 
-def Main(username,password, counter):
+def Main(username,password):
     global table
     global currentclientpath
     global currentserverpath
@@ -90,13 +90,15 @@ def Main(username,password, counter):
         printandlog("Enter \"HELP\" to show all supported commands")
         sys.stdout.write("\n>>> ")
         sys.stdout.flush()
-        timeout = 600
+        timeout = 120   #time out after 120 seconds (roughly 2 mins) if the user has been idle
+        # utilized the sys stding to wait for user IO to exit the blocked stated
         rlist, _, _ = select([sys.stdin], [], [], timeout)
         if rlist:
             action = sys.stdin.readline().strip()
         else:
+            #if user has been idle, and no commands given, disconnect the user from the server
             print("\n\n\nIdle for too long. Disconnecting...")
-            action = "QUIT"
+            action = "QUIT"     #set the command to QUIT
 
         action = action.upper()	
 
@@ -169,6 +171,7 @@ def Main(username,password, counter):
             else:
                 printandlog("File not found in server")
 
+        #Get multiple command: loops through the number of files to get and gets file from remote server one by one as user enters names
 	elif command == 'GETMULTIPLE':
 	    filecount = rawinputandlog("Enter the number of files you want to get from server: ")
             s.send(filecount)
@@ -237,6 +240,9 @@ def Main(username,password, counter):
                 s.send("!!!")    #this will alert the server that we aren't proceeding with PUT
                 print("File not found in client")
 
+        #Put multiple command, this puts multiple files from the client to the remote server
+                # Done in a loop fashion, utilized the same functionality as put command to write files from client to server
+                # one by one
 	elif command == "PUTMULTIPLE":
 	    filecount = rawinputandlog("Enter the number of files you want to upload to server: ")
             s.send(filecount) 
@@ -482,6 +488,4 @@ password = sys.argv[2]
 
 #pass username and password to main function.
 if __name__ == '__main__':
-    counter = 0
-    getcounter = 0
-    Main(username,password, counter)
+    Main(username,password)

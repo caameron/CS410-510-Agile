@@ -1,0 +1,55 @@
+
+******************************************************************************
+Current Session Date and Time:Tue Aug 14 22:31:12 2018
+******************************************************************************
+Thanks for registering on the FTP client dd
+
+******************************************************************************
+Enter "HELP" to show all supported commands
++-------------+--------------------------------+
+|   COMMAND   |          DESCRIPTION           |
++-------------+--------------------------------+
+|     GET     |   Download file from server    |
+|     PUT     |     Upload file to server      |
+|    MKDIR    |   Create directory on server   |
+|     LIST    | List files in local or server  |
+| GETMULTIPLE |   Download file from server    |
+| PUTMULTIPLE |     Upload file to server      |
+|      CD     |        Change directory        |
+|  DELETEFILE |          Delete file           |
+|  DELETEDIR  |        Delete directory        |
+|    RENAME   | Rename file in local or server |
+|    SEARCH   | Search file in local or server |
+|     COPY    |   Copy directories on server   |
+|     QUIT    |            Log Off             |
++-------------+--------------------------------+
+******************************************************************************
+Enter "HELP" to show all supported commands
+Enter filename you want to get from server: random.txt
+File to GET is 49 Bytes, Proceed? (Y/N) Y
+GET successful
+******************************************************************************
+Enter "HELP" to show all supported commands
+Enter filename you want to put to server: random.txt
+File to PUT is 0 Bytes, Proceed? (Y/N) T
+******************************************************************************
+Enter "HELP" to show all supported commands
++-------------+--------------------------------+
+|   COMMAND   |          DESCRIPTION           |
++-------------+--------------------------------+
+|     GET     |   Download file from server    |
+|     PUT     |     Upload file to server      |
+|    MKDIR    |   Create directory on server   |
+|     LIST    | List files in local or server  |
+| GETMULTIPLE |   Download file from server    |
+| PUTMULTIPLE |     Upload file to server      |
+|      CD     |        Change directory        |
+|  DELETEFILE |          Delete file           |
+|  DELETEDIR  |        Delete directory        |
+|    RENAME   | Rename file in local or server |
+|    SEARCH   | Search file in local or server |
+|     COPY    |   Copy directories on server   |
+|     QUIT    |            Log Off             |
++-------------+--------------------------------+
+******************************************************************************
+Enter "HELP" to show all supported commands
