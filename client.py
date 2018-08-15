@@ -7,8 +7,8 @@ import shutil
 import time
 from select import select
 
-currentclientpath = None
-currentserverpath = None
+currentclientpath = None	#will contain path to ftp directory for client.
+currentserverpath = None	#will contain path to ftp directory for server.
 currentpath = os.path.realpath("Logs")
 logfile = os.path.join(currentpath,"client.log")
 fObj = open(logfile,"a+")
@@ -43,7 +43,7 @@ def Main(username,password):
 
     currentclientpath = os.path.realpath("clientlocation")
 
-    host = '127.0.0.1'  #host ip
+    host = '127.0.0.1'  #host ip (set as local)
     port = 8888         #port number
 
     s = socket.socket()             #get client socket s
@@ -76,11 +76,11 @@ def Main(username,password):
         printandlog("Thanks for registering on the FTP client " + username)
 
     try:
-        #this will make a folder in the client's desktop (using relative pathing) called ClientFiles. This folder will
+        #this will make a folder in the client's working directory (using relative pathing) called clientlocation. This folder will
         #act as the primary directory for the client where files will be sent to and from the folder for put/get.
         os.mkdir(os.path.expanduser(currentclientpath))
     except:
-        #if file already exists on desktop then just continue
+        #if file already exists then just continue
         printandlog("CONTINUE")
 
     printandlog("")
@@ -462,7 +462,7 @@ def Main(username,password):
             printandlog("Server does not support commmand: " + command + ". Please check again!")
 
 
-
+##    For Future development:
 ##    other commands can go here in if statements like list directories, etc.
 ##    just be sure to also implement the complementary command for the server.
 ##    for example:
